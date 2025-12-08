@@ -43,27 +43,29 @@ try {
     
     // Get order items
     $stmt = $pdo->prepare("
-        SELECT oi.*, p.name, p.weight
+        SELECT oi.*, p.name,
+               COALESCE(pv.weight, 500) as weight
         FROM order_items oi
         JOIN products p ON oi.product_id = p.id
+        LEFT JOIN product_variants pv ON oi.variant_id = pv.id
         WHERE oi.order_id = ?
     ");
     $stmt->execute([$orderId]);
     $items = $stmt->fetchAll();
-    
-    // Calculate total weight
+
+    // Calculate total weight (weight is in grams from DB)
     $totalWeight = 0;
     $biteshipItems = [];
     foreach ($items as $item) {
-        $weight = floatval($item['weight'] ?? 0.5); // Default 0.5kg if not set
-        $totalWeight += $weight * $item['qty'];
+        $weightGrams = intval($item['weight'] ?? 500); // Default 500g if not set
+        $totalWeight += $weightGrams * $item['qty'];
         
         $biteshipItems[] = [
             'name' => $item['name'],
             'description' => $item['name'],
             'value' => intval($item['price']),
             'quantity' => intval($item['qty']),
-            'weight' => intval($weight * 1000) // Convert to grams
+            'weight' => $weightGrams // Already in grams
         ];
     }
     

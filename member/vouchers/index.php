@@ -12,11 +12,7 @@ $user = getCurrentUser();
 $stmt = $pdo->prepare("
     SELECT v.*,
            uv.assigned_at,
-           COALESCE(
-               (SELECT COUNT(*) FROM orders
-                WHERE user_id = ? AND voucher_code = v.code),
-               0
-           ) as usage_count,
+           0 as usage_count,
            CASE
                WHEN v.total_usage_limit IS NOT NULL AND v.total_used >= v.total_usage_limit THEN 1
                ELSE 0
@@ -29,7 +25,7 @@ $stmt = $pdo->prepare("
       AND v.valid_until >= NOW()
     ORDER BY v.type DESC, v.discount_value DESC
 ");
-$stmt->execute([$userId, $userId]);
+$stmt->execute([$userId]);
 $allVouchers = $stmt->fetchAll();
 
 // Categorize vouchers

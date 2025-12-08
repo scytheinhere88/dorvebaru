@@ -91,7 +91,9 @@ testStep(5, "Loading user addresses", function() {
 testStep(6, "Loading cart items", function() {
     global $pdo;
     $userId = $_SESSION['user_id'];
-    $stmt = $pdo->prepare("SELECT ci.*, p.name, p.price, p.discount_percent, p.weight, pv.size, pv.color,
+    $stmt = $pdo->prepare("SELECT ci.*, p.name, p.price, p.discount_percent,
+                           COALESCE(pv.weight, 500) as weight,
+                           pv.size, pv.color,
                            COALESCE(pi.image_path, p.image) as image_path
                            FROM cart_items ci
                            JOIN products p ON ci.product_id = p.id
@@ -108,7 +110,9 @@ testStep(7, "Validating stock availability", function() {
     global $pdo, $cart_items;
     $userId = $_SESSION['user_id'];
 
-    $stmt = $pdo->prepare("SELECT ci.*, p.name, p.price, p.discount_percent, p.weight, pv.size, pv.color,
+    $stmt = $pdo->prepare("SELECT ci.*, p.name, p.price, p.discount_percent,
+                           COALESCE(pv.weight, 500) as weight,
+                           pv.size, pv.color,
                            COALESCE(pi.image_path, p.image) as image_path
                            FROM cart_items ci
                            JOIN products p ON ci.product_id = p.id

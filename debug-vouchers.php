@@ -61,7 +61,7 @@ echo "<h2>2️⃣ Your Assigned Vouchers</h2>";
 
 try {
     $stmt = $pdo->prepare("
-        SELECT v.*, uv.assigned_at, uv.used_at
+        SELECT v.*, uv.assigned_at
         FROM user_vouchers uv
         JOIN vouchers v ON uv.voucher_id = v.id
         WHERE uv.user_id = ?
@@ -193,11 +193,7 @@ try {
     $stmt = $pdo->prepare("
         SELECT v.*,
                uv.assigned_at,
-               COALESCE(
-                   (SELECT COUNT(*) FROM orders
-                    WHERE user_id = ? AND voucher_code = v.code),
-                   0
-               ) as usage_count
+               0 as usage_count
         FROM user_vouchers uv
         INNER JOIN vouchers v ON uv.voucher_id = v.id
         WHERE uv.user_id = ?
@@ -206,7 +202,7 @@ try {
           AND v.valid_until >= NOW()
         ORDER BY v.type DESC, v.discount_value DESC
     ");
-    $stmt->execute([$userId, $userId]);
+    $stmt->execute([$userId]);
     $newQueryResults = $stmt->fetchAll();
 
     echo "<p>New query returns: <strong class='".(!empty($newQueryResults) ? 'success' : 'error')."'>" . count($newQueryResults) . " vouchers</strong></p>";
