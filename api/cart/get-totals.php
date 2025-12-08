@@ -11,7 +11,7 @@ try {
         $stmt = $pdo->prepare("
             SELECT
                 SUM(ci.qty) as total_items,
-                SUM((p.price - (p.price * p.discount_percent / 100) + COALESCE(pv.extra_price, 0)) * ci.qty) as total_amount
+                SUM((p.price - (p.price * p.discount_percent / 100)) * ci.qty) as total_amount
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.id
             LEFT JOIN product_variants pv ON ci.variant_id = pv.id
@@ -23,7 +23,7 @@ try {
         $stmt = $pdo->prepare("
             SELECT
                 SUM(ci.qty) as total_items,
-                SUM((p.price - (p.price * p.discount_percent / 100) + COALESCE(pv.extra_price, 0)) * ci.qty) as total_amount
+                SUM((p.price - (p.price * p.discount_percent / 100)) * ci.qty) as total_amount
             FROM cart_items ci
             JOIN products p ON ci.product_id = p.id
             LEFT JOIN product_variants pv ON ci.variant_id = pv.id
