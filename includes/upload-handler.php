@@ -43,10 +43,12 @@ function handleImageUpload($file, $directory = 'products', $maxSize = 134217728)
     $uploadPath = $uploadDir . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+        // Use the correct directory path instead of hardcoded 'products/'
+        $relativePath = $directory . '/' . $filename;
         return [
             'success' => true,
-            'path' => 'products/' . $filename,
-            'file_path' => 'products/' . $filename,
+            'path' => $relativePath,
+            'file_path' => $relativePath,
             'filename' => $filename
         ];
     }

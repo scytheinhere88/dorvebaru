@@ -264,10 +264,12 @@ include __DIR__ . '/../includes/member-layout-horizontal.php';
 
         /* Transaction List */
         .transaction-item {
-            flex-direction: column;
-            align-items: flex-start;
             padding: 16px;
-            gap: 12px;
+        }
+
+        .transaction-info {
+            margin-right: 0 !important;
+            margin-bottom: 8px;
         }
 
         .transaction-amount {
@@ -281,6 +283,12 @@ include __DIR__ . '/../includes/member-layout-horizontal.php';
         .transaction-status {
             font-size: 11px;
             padding: 4px 10px;
+        }
+
+        /* Proof Image in Transaction List */
+        .transaction-item img {
+            max-width: 150px !important;
+            max-height: 150px !important;
         }
 
         /* Form Inputs */
@@ -608,24 +616,38 @@ include __DIR__ . '/../includes/member-layout-horizontal.php';
                 </div>
             <?php else: ?>
                 <?php foreach ($transactions as $txn): ?>
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-title">Wallet Top Up</div>
-                            <div class="transaction-date">
-                                <?php echo date('d M Y, H:i', strtotime($txn['created_at'])); ?>
-                                <?php if ($txn['description']): ?>
-                                    - <?php echo htmlspecialchars($txn['description']); ?>
-                                <?php endif; ?>
+                    <div class="transaction-item" style="display: block;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: <?php echo !empty($txn['proof_image']) ? '16px' : '0'; ?>;">
+                            <div class="transaction-info">
+                                <div class="transaction-title">Wallet Top Up</div>
+                                <div class="transaction-date">
+                                    <?php echo date('d M Y, H:i', strtotime($txn['created_at'])); ?>
+                                    <?php if ($txn['description']): ?>
+                                        - <?php echo htmlspecialchars($txn['description']); ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div class="transaction-amount credit">
+                                    + <?php echo formatPrice($txn['amount_original'] ?? $txn['amount']); ?>
+                                </div>
+                                <span class="transaction-status <?php echo $txn['payment_status']; ?>">
+                                    <?php echo strtoupper($txn['payment_status']); ?>
+                                </span>
                             </div>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="transaction-amount credit">
-                                + <?php echo formatPrice($txn['amount_original'] ?? $txn['amount']); ?>
+
+                        <?php if (!empty($txn['proof_image'])): ?>
+                        <div style="margin-top: 12px; padding-top: 16px; border-top: 1px solid rgba(0,0,0,0.05);">
+                            <div style="font-size: 13px; font-weight: 600; color: #6B7280; margin-bottom: 8px;">📸 Bukti Transfer:</div>
+                            <a href="<?php echo htmlspecialchars($txn['proof_image']); ?>" target="_blank" style="display: inline-block; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.3s;">
+                                <img src="<?php echo htmlspecialchars($txn['proof_image']); ?>" alt="Bukti Transfer" style="max-width: 200px; max-height: 200px; display: block; object-fit: cover; cursor: pointer;">
+                            </a>
+                            <div style="font-size: 12px; color: #6B7280; margin-top: 8px;">
+                                <a href="<?php echo htmlspecialchars($txn['proof_image']); ?>" target="_blank" style="color: #2563EB; text-decoration: underline;">Lihat gambar full</a>
                             </div>
-                            <span class="transaction-status <?php echo $txn['payment_status']; ?>">
-                                <?php echo strtoupper($txn['payment_status']); ?>
-                            </span>
                         </div>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             <?php endif; ?>
