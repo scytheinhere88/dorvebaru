@@ -84,11 +84,15 @@ foreach ($payment_methods as $method) {
     $payment_enabled[$method['type']] = true;
 }
 
+$payment_settings = null;
 try {
     $stmt = $pdo->query("SELECT * FROM payment_gateway_settings WHERE is_active = 1");
     $gateway_settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
     foreach ($gateway_settings as $gateway) {
         $payment_enabled[$gateway['gateway_name']] = true;
+        if ($gateway['gateway_name'] === 'midtrans') {
+            $payment_settings = $gateway;
+        }
     }
 } catch (Exception $e) {
     // Gateway settings not available
