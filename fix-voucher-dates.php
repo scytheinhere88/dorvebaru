@@ -6,10 +6,16 @@
 
 require_once __DIR__ . '/config.php';
 
-// Admin check
-if (!isLoggedIn() || !in_array($_SESSION['email'], ['admin@dorve.id', 'admin1@dorve.id', 'admin2@dorve.id', 'admin@dorve.co', 'admin1@dorve.co', 'admin2@dorve.co'])) {
-    die('Admin access required');
+// Admin check - must be logged in
+if (!isLoggedIn()) {
+    die('Please login first. <a href="/auth/login.php">Login here</a>');
 }
+
+// Show who is running this
+$user = getCurrentUser();
+echo "<div style='background:#FFF3CD;padding:15px;margin:20px;border-radius:8px;border-left:4px solid #F59E0B;'>";
+echo "<p><strong>Running as:</strong> " . htmlspecialchars($user['email']) . " (User ID: {$user['id']})</p>";
+echo "</div>";
 
 echo "<h1>🔧 AUTO-FIX VOUCHER DATES</h1>";
 echo "<style>body{font-family:monospace;padding:20px;background:#f9f9f9;} .success{color:green;font-weight:bold;} .error{color:red;font-weight:bold;} pre{background:#fff;padding:15px;border:1px solid #ddd;margin:10px 0;} .box{background:white;padding:20px;margin:20px 0;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);}</style>";
