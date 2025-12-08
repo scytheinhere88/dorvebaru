@@ -18,16 +18,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'], $_POST['dep
             try {
                 $pdo->beginTransaction();
 
-                // Update user balance
-                $stmt = $pdo->prepare("UPDATE users SET balance = balance + ? WHERE id = ?");
-                $stmt->execute([$txn['amount_original'] ?? $txn['amount'], $txn['user_id']]);
+                // Get user current balance
+                $stmt = $pdo->prepare("SELECT wallet_balance FROM users WHERE id = ?");
+                $stmt->execute([$txn['user_id']]);
+                $currentBalance = $stmt->fetchColumn();
 
-                // Update transaction status
-                $stmt = $pdo->prepare("UPDATE wallet_transactions SET status = 'approved', admin_notes = ?, payment_status = 'success', updated_at = NOW() WHERE id = ?");
-                $stmt->execute([$admin_notes, $deposit_id]);
+                $depositAmount = $txn['amount_original'] ?? $txn['amount'];
+                $newBalance = $currentBalance + $depositAmount;
+
+                // Update user wallet balance
+                $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?");
+                $stmt->execute([$depositAmount, $txn['user_id']]);
+
+                // Update transaction status and balance_after
+                $stmt = $pdo->prepare("UPDATE wallet_transactions SET status = 'approved', admin_notes = ?, payment_status = 'success', balance_after = ?, updated_at = NOW() WHERE id = ?");
+                $stmt->execute([$admin_notes, $newBalance, $deposit_id]);
 
                 $pdo->commit();
-                $_SESSION['success'] = 'Deposit approved! User balance updated.';
+                $_SESSION['success'] = 'Deposit approved! User balance updated: +Rp ' . number_format($depositAmount, 0, ',', '.');
             } catch (Exception $e) {
                 $pdo->rollBack();
                 $_SESSION['error'] = 'Error approving deposit: ' . $e->getMessage();
