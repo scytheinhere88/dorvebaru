@@ -153,6 +153,9 @@ try {
             PDO::ATTR_EMULATE_PREPARES => false
         ]
     );
+
+    // Set MySQL timezone to match PHP timezone (Asia/Jakarta = UTC+7)
+    $pdo->exec("SET time_zone = '+07:00'");
 } catch (PDOException $e) {
     die("Connection failed: " . $e->getMessage());
 }
