@@ -1,9 +1,6 @@
 <?php
-if (!function_exists('isAdmin')) {
-    function isAdmin() {
-        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
-    }
-}
+// Auth check sudah di handle oleh config.php
+// Tidak perlu duplicate function isAdmin()
 
 if (!isAdmin()) {
     header('Location: /admin/login.php');
