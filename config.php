@@ -19,6 +19,13 @@ define('UPLOAD_URL', rtrim(SITE_URL, '/') . '/uploads/');
 
 // Session Configuration
 if (session_status() === PHP_SESSION_NONE) {
+    // Fix session save path - Use custom directory with proper permissions
+    $session_dir = __DIR__ . '/sessions';
+    if (!file_exists($session_dir)) {
+        mkdir($session_dir, 0755, true);
+    }
+    session_save_path($session_dir);
+
     // Set session configuration for better compatibility
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
