@@ -8,22 +8,28 @@ if (!isLoggedIn()) {
 $userId = $_SESSION['user_id'];
 $user = getCurrentUser();
 
-// Get all available vouchers for this user
+// Get vouchers assigned to this user
 $stmt = $pdo->prepare("
     SELECT v.*,
-           COALESCE(uv.usage_count, 0) as usage_count,
-           CASE 
+           uv.assigned_at,
+           COALESCE(
+               (SELECT COUNT(*) FROM orders
+                WHERE user_id = ? AND voucher_code = v.code),
+               0
+           ) as usage_count,
+           CASE
                WHEN v.total_usage_limit IS NOT NULL AND v.total_used >= v.total_usage_limit THEN 1
                ELSE 0
            END as is_limit_reached
-    FROM vouchers v
-    LEFT JOIN user_vouchers uv ON v.id = uv.voucher_id AND uv.user_id = ?
-    WHERE v.is_active = 1
+    FROM user_vouchers uv
+    INNER JOIN vouchers v ON uv.voucher_id = v.id
+    WHERE uv.user_id = ?
+      AND v.is_active = 1
       AND v.valid_from <= NOW()
       AND v.valid_until >= NOW()
     ORDER BY v.type DESC, v.discount_value DESC
 ");
-$stmt->execute([$userId]);
+$stmt->execute([$userId, $userId]);
 $allVouchers = $stmt->fetchAll();
 
 // Categorize vouchers
