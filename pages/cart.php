@@ -61,8 +61,9 @@ try {
     die("<h1>Error - Cart.php</h1><pre>" . htmlspecialchars($e->getMessage()) . "\n\nStack trace:\n" . htmlspecialchars($e->getTraceAsString()) . "</pre>");
 }
 
-$shipping = $subtotal >= 500000 ? 0 : 25000;
-$total = $subtotal + $shipping;
+// Show free shipping indicator only, actual shipping calculated at checkout
+$showFreeShipping = $subtotal >= 500000;
+$total = $subtotal; // Total = subtotal only, shipping added at checkout
 
 $page_title = 'Keranjang Belanja - Checkout Aman & Mudah | Dorve House';
 $page_description = 'Lihat keranjang belanja Anda. Lanjutkan ke checkout untuk menyelesaikan pembelian baju wanita online. Gratis ongkir min Rp500.000, pembayaran aman, COD tersedia.';
@@ -470,14 +471,16 @@ include __DIR__ . '/../includes/header.php';
 
                 <div class="summary-row">
                     <span>Shipping</span>
-                    <span><?php echo $shipping === 0 ? 'FREE' : formatPrice($shipping); ?></span>
+                    <span style="color: #667EEA; font-weight: 600;">Calculated at checkout</span>
                 </div>
 
-                <?php if ($shipping === 0): ?>
-                    <p style="font-size: 12px; color: #2E7D32; margin-top: 8px;">✓ Free shipping applied!</p>
+                <?php if ($showFreeShipping): ?>
+                    <p style="font-size: 12px; color: #2E7D32; margin-top: 8px; background: #ECFDF5; padding: 8px 12px; border-radius: 8px; border: 1px solid #10B981;">
+                        ✓ Free shipping eligible! (Subtotal ≥ Rp 500.000)
+                    </p>
                 <?php else: ?>
-                    <p style="font-size: 12px; color: var(--grey); margin-top: 8px;">
-                        Add <?php echo formatPrice(500000 - $subtotal); ?> more for free shipping
+                    <p style="font-size: 12px; color: #667EEA; margin-top: 8px; background: #EEF2FF; padding: 8px 12px; border-radius: 8px; border: 1px solid #C7D2FE;">
+                        💰 Add <?php echo formatPrice(500000 - $subtotal); ?> more for FREE shipping!
                     </p>
                 <?php endif; ?>
 
