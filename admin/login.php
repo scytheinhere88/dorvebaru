@@ -8,22 +8,33 @@ if (isLoggedIn() && isAdmin()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
+    $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
 
     if ($email && $password) {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role = 'admin'");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ? AND role = 'admin'");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['role'] = 'admin';
-            $_SESSION['is_admin'] = 1;
-            redirect('/admin/index.php');
-        } else {
-            $error = 'Invalid email or password';
+            if ($user && password_verify($password, $user['password'])) {
+                // Regenerate session ID for security
+                session_regenerate_id(true);
+
+                // Set session variables
+                $_SESSION['user_id'] = $user['id'];
+                $_SESSION['user_name'] = $user['name'];
+                $_SESSION['role'] = 'admin';
+                $_SESSION['is_admin'] = 1;
+
+                redirect('/admin/index.php');
+            } else {
+                $error = 'Invalid email or password';
+                error_log("Failed admin login attempt for: $email");
+            }
+        } catch (Exception $e) {
+            $error = 'System error. Please try again.';
+            error_log("Admin login error: " . $e->getMessage());
         }
     } else {
         $error = 'Please fill all fields';

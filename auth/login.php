@@ -14,28 +14,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($email) || empty($password)) {
         $error = 'Please fill in all fields';
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch();
 
-        if ($user && password_verify($password, $user['password'])) {
-            // Check email verification for customers (admin can skip)
-            if ($user['role'] === 'customer' && !$user['email_verified']) {
-                $error = '<strong>⚠️ Aktivasi Akun Diperlukan!</strong><br><br>Email Anda belum diverifikasi. Silakan cek inbox atau folder spam email Anda dan klik link aktivasi.<br><br>Belum menerima email? <a href="/auth/resend-verification.php?email=' . urlencode($email) . '" style="color: #1A1A1A; text-decoration: underline; font-weight: 600;">Kirim Ulang Email Verifikasi</a>';
+            if ($user && password_verify($password, $user['password'])) {
+                // Check email verification for customers (admin can skip)
+                if ($user['role'] === 'customer' && !$user['email_verified']) {
+                    $error = '<strong>⚠️ Aktivasi Akun Diperlukan!</strong><br><br>Email Anda belum diverifikasi. Silakan cek inbox atau folder spam email Anda dan klik link aktivasi.<br><br>Belum menerima email? <a href="/auth/resend-verification.php?email=' . urlencode($email) . '" style="color: #1A1A1A; text-decoration: underline; font-weight: 600;">Kirim Ulang Email Verifikasi</a>';
+                } else {
+                    // Regenerate session ID for security
+                    session_regenerate_id(true);
+
+                    // Set session variables
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['user_name'] = $user['name'];
+                    $_SESSION['role'] = $user['role'];
+                    $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0;
+
+                    // Merge cart items
+                    try {
+                        $old_session_id = session_id();
+                        $stmt = $pdo->prepare("UPDATE cart_items SET user_id = ?, session_id = NULL WHERE session_id = ?");
+                        $stmt->execute([$user['id'], $old_session_id]);
+                    } catch (Exception $e) {
+                        error_log("Cart merge error: " . $e->getMessage());
+                    }
+
+                    // Redirect based on role
+                    if ($user['role'] === 'admin') {
+                        redirect('/admin/index.php');
+                    } else {
+                        redirect('/member/dashboard.php');
+                    }
+                }
             } else {
-                $_SESSION['user_id'] = $user['id'];
-                $_SESSION['user_name'] = $user['name'];
-                $_SESSION['role'] = $user['role'];
-                $_SESSION['is_admin'] = ($user['role'] === 'admin') ? 1 : 0;
-
-                $old_session_id = session_id();
-                $stmt = $pdo->prepare("UPDATE cart_items SET user_id = ?, session_id = NULL WHERE session_id = ?");
-                $stmt->execute([$user['id'], $old_session_id]);
-
-                redirect('/member/dashboard.php');
+                $error = 'Email atau password salah';
+                error_log("Failed login attempt for: $email");
             }
-        } else {
-            $error = 'Email atau password salah';
+        } catch (Exception $e) {
+            $error = 'Terjadi kesalahan sistem. Silakan coba lagi.';
+            error_log("Login error: " . $e->getMessage());
         }
     }
 }

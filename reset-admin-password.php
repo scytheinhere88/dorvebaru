@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             // Check if user exists
-            $stmt = $pdo->prepare("SELECT id, name, role FROM users WHERE email = ?");
+            $stmt = $pdo->prepare("SELECT id, name, email, role FROM users WHERE email = ?");
             $stmt->execute([$email]);
             $user = $stmt->fetch();
 
@@ -40,12 +40,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 // Update password
                 $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
-                $stmt->execute([$hashed_password, $user['id']]);
+                $result = $stmt->execute([$hashed_password, $user['id']]);
 
-                $message = "✅ Password untuk <strong>{$user['name']}</strong> ({$email}) berhasil direset!<br>";
-                $message .= "Role: {$user['role']}<br><br>";
-                $message .= "<strong>PENTING:</strong> Hapus file reset-admin-password.php setelah selesai!<br>";
-                $message .= "<a href='/auth/login.php' style='color: #1A1A1A; font-weight: 600;'>→ Login Sekarang</a>";
+                if ($result) {
+                    // Verify the password was updated correctly
+                    $stmt = $pdo->prepare("SELECT password FROM users WHERE id = ?");
+                    $stmt->execute([$user['id']]);
+                    $updated_user = $stmt->fetch();
+
+                    $verify_test = password_verify($new_password, $updated_user['password']);
+
+                    $message = "<div style='background: #D1FAE5; padding: 20px; border-radius: 8px; margin-bottom: 20px;'>";
+                    $message .= "✅ <strong>Password berhasil direset!</strong><br><br>";
+                    $message .= "<strong>User:</strong> {$user['name']}<br>";
+                    $message .= "<strong>Email:</strong> {$user['email']}<br>";
+                    $message .= "<strong>Role:</strong> {$user['role']}<br>";
+                    $message .= "<strong>Password Test:</strong> " . ($verify_test ? '✅ Verified!' : '❌ Failed') . "<br>";
+                    $message .= "</div>";
+
+                    $message .= "<div style='background: #FEF3C7; padding: 16px; border-radius: 6px; margin-bottom: 20px;'>";
+                    $message .= "⚠️ <strong>PENTING:</strong> Hapus file reset-admin-password.php setelah selesai!<br>";
+                    $message .= "</div>";
+
+                    if ($user['role'] === 'admin') {
+                        $message .= "<a href='/admin/login.php' style='display: inline-block; padding: 12px 24px; background: #1A1A1A; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>→ Login ke Admin Panel</a>";
+                    } else {
+                        $message .= "<a href='/auth/login.php' style='display: inline-block; padding: 12px 24px; background: #1A1A1A; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;'>→ Login ke Member Area</a>";
+                    }
+                } else {
+                    $error = 'Gagal update password di database!';
+                }
             }
         } catch (Exception $e) {
             $error = 'Database error: ' . $e->getMessage();

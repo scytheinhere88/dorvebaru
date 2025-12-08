@@ -19,7 +19,19 @@ define('UPLOAD_URL', rtrim(SITE_URL, '/') . '/uploads/');
 
 // Session Configuration
 if (session_status() === PHP_SESSION_NONE) {
-    session_start();
+    // Set session configuration for better compatibility
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_samesite', 'Lax');
+
+    // Start session with error handling
+    try {
+        if (!session_start()) {
+            error_log("Failed to start session");
+        }
+    } catch (Exception $e) {
+        error_log("Session start error: " . $e->getMessage());
+    }
 }
 
 // Include Upload Handler Functions
