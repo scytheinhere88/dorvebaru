@@ -4,17 +4,8 @@
  * Professional email system for Dorve House
  */
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-// Try to load PHPMailer if available
-$phpmailer_path = __DIR__ . '/../vendor/autoload.php';
-if (file_exists($phpmailer_path)) {
-    require_once $phpmailer_path;
-    define('USE_SMTP', true);
-} else {
-    define('USE_SMTP', false);
-}
+// Disable PHPMailer for now - use PHP mail() function
+define('USE_SMTP', false);
 
 // Email configuration - CONFIGURED!
 define('SMTP_HOST', 'smtp.gmail.com');
@@ -26,51 +17,11 @@ define('FROM_NAME', 'Dorve.id - Pusat Fashion Indonesia');
 define('SITE_URL', 'https://dorve.id/');
 
 /**
- * Send Email using SMTP or fallback to mail()
+ * Send Email using PHP mail() function
  */
 function sendEmail($to, $subject, $html_body, $from_name = FROM_NAME, $from_email = FROM_EMAIL) {
-    // Try SMTP first if PHPMailer is available
-    if (USE_SMTP && class_exists('PHPMailer\PHPMailer\PHPMailer')) {
-        try {
-            $mail = new PHPMailer(true);
-
-            // Server settings
-            $mail->isSMTP();
-            $mail->Host = SMTP_HOST;
-            $mail->SMTPAuth = true;
-            $mail->Username = SMTP_USERNAME;
-            $mail->Password = SMTP_PASSWORD;
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-            $mail->Port = SMTP_PORT;
-            $mail->CharSet = 'UTF-8';
-
-            // Recipients
-            $mail->setFrom(SMTP_USERNAME, $from_name);
-            $mail->addAddress($to);
-            $mail->addReplyTo(SMTP_USERNAME, $from_name);
-
-            // Content
-            $mail->isHTML(true);
-            $mail->Subject = $subject;
-            $mail->Body = $html_body;
-            $mail->AltBody = strip_tags($html_body);
-
-            $result = $mail->send();
-
-            // Log success
-            error_log("✅ Email sent successfully via SMTP to: $to");
-
-            return $result;
-        } catch (Exception $e) {
-            error_log("❌ SMTP Error: " . $mail->ErrorInfo);
-
-            // Fall back to mail()
-            return sendEmailViaMail($to, $subject, $html_body, $from_name, $from_email);
-        }
-    } else {
-        // Use PHP mail() as fallback
-        return sendEmailViaMail($to, $subject, $html_body, $from_name, $from_email);
-    }
+    // Use PHP mail() function directly
+    return sendEmailViaMail($to, $subject, $html_body, $from_name, $from_email);
 }
 
 /**

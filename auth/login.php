@@ -181,7 +181,7 @@ include __DIR__ . '/../includes/header.php';
         <p class="auth-subtitle">Login to your Dorve House account</p>
 
         <?php if ($error): ?>
-            <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+            <div class="error-message"><?php echo $error; ?></div>
         <?php endif; ?>
 
         <form method="POST">

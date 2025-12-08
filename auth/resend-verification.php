@@ -7,60 +7,62 @@ if (isLoggedIn()) {
 
 $error = '';
 $success = '';
+$email = trim($_GET['email'] ?? '');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
-    
+
     if (empty($email)) {
         $error = 'Mohon masukkan email Anda';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Format email tidak valid';
     } else {
-        // Check if user exists
-        $stmt = $pdo->prepare("SELECT id, name, email FROM users WHERE email = ?");
+        $stmt = $pdo->prepare("SELECT id, name, email, email_verified FROM users WHERE email = ?");
         $stmt->execute([$email]);
         $user = $stmt->fetch();
-        
+
         if ($user) {
-            // Generate reset token
-            $reset_token = bin2hex(random_bytes(32));
-            $reset_expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
-            
-            // Save token to database
-            $stmt = $pdo->prepare("
-                UPDATE users 
-                SET password_reset_token = ?, 
-                    password_reset_expiry = ?, 
-                    password_reset_attempts = COALESCE(password_reset_attempts, 0) + 1,
-                    last_password_reset_request = NOW()
-                WHERE id = ?
-            ");
-            $stmt->execute([$reset_token, $reset_expiry, $user['id']]);
-            
-            // Send email
-            try {
-                require_once __DIR__ . '/../includes/email-helper.php';
-                $reset_link = SITE_URL . "auth/reset-password.php?token=" . $reset_token;
-                $emailSent = sendPasswordResetEmail($user['email'], $user['name'], $reset_link);
-                
-                if ($emailSent) {
-                    $success = 'Link reset password telah dikirim ke email Anda. Link berlaku selama 1 jam.';
-                } else {
-                    $error = 'Gagal mengirim email. Silakan coba lagi nanti.';
+            if ($user['email_verified']) {
+                $error = 'Email Anda sudah diverifikasi. Silakan <a href="/auth/login.php">login</a>';
+            } else {
+                // Generate new verification token
+                $verification_token = bin2hex(random_bytes(32));
+                $verification_expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
+
+                $stmt = $pdo->prepare("
+                    UPDATE users
+                    SET email_verification_token = ?,
+                        email_verification_expiry = ?,
+                        verification_attempts = COALESCE(verification_attempts, 0) + 1,
+                        last_verification_sent = NOW()
+                    WHERE id = ?
+                ");
+                $stmt->execute([$verification_token, $verification_expiry, $user['id']]);
+
+                // Send verification email
+                try {
+                    require_once __DIR__ . '/../includes/email-helper.php';
+                    $verification_link = SITE_URL . "auth/verify-email.php?token=" . $verification_token;
+                    $emailSent = sendVerificationEmail($user['email'], $user['name'], $verification_link);
+
+                    if ($emailSent) {
+                        $success = 'Email verifikasi telah dikirim ulang! Silakan cek inbox atau folder spam Anda.';
+                    } else {
+                        $error = 'Gagal mengirim email. Silakan coba lagi nanti atau hubungi admin.';
+                    }
+                } catch (Exception $e) {
+                    error_log('Verification email error: ' . $e->getMessage());
+                    $error = 'Terjadi kesalahan. Silakan coba lagi.';
                 }
-            } catch (Exception $e) {
-                error_log('Password reset email error: ' . $e->getMessage());
-                $error = 'Terjadi kesalahan. Silakan coba lagi.';
             }
         } else {
-            // Don't reveal if email exists (security best practice)
-            $success = 'Jika email terdaftar, link reset password akan dikirim ke email Anda.';
+            $success = 'Jika email terdaftar, link verifikasi akan dikirim.';
         }
     }
 }
 
-$page_title = 'Lupa Password - Reset Password Dorve House | Atur Ulang Kata Sandi';
-$page_description = 'Lupa password akun Dorve House? Atur ulang kata sandi Anda dengan mudah melalui email verifikasi.';
+$page_title = 'Kirim Ulang Email Verifikasi - Dorve House';
+$page_description = 'Kirim ulang email verifikasi akun Dorve House';
 include __DIR__ . '/../includes/header.php';
 ?>
 
@@ -80,7 +82,7 @@ include __DIR__ . '/../includes/header.php';
 
     .auth-title {
         font-family: 'Playfair Display', serif;
-        font-size: 32px;
+        font-size: 28px;
         margin-bottom: 12px;
         text-align: center;
     }
@@ -175,24 +177,14 @@ include __DIR__ . '/../includes/header.php';
         font-size: 48px;
         margin-bottom: 20px;
     }
-
-    @media (max-width: 768px) {
-        .auth-card {
-            padding: 40px 30px;
-        }
-
-        .auth-title {
-            font-size: 28px;
-        }
-    }
 </style>
 
 <div class="auth-container">
     <div class="auth-card">
-        <div class="icon-wrapper">🔒</div>
-        <h1 class="auth-title">Lupa Password?</h1>
+        <div class="icon-wrapper">📧</div>
+        <h1 class="auth-title">Kirim Ulang Email Verifikasi</h1>
         <p class="auth-subtitle">
-            Jangan khawatir! Masukkan email Anda dan kami akan mengirimkan link untuk reset password.
+            Belum menerima email verifikasi? Masukkan email Anda dan kami akan mengirim ulang link verifikasinya.
         </p>
 
         <?php if ($error): ?>
@@ -209,18 +201,18 @@ include __DIR__ . '/../includes/header.php';
             <form method="POST">
                 <div class="form-group">
                     <label class="form-label">Email Address</label>
-                    <input 
-                        type="email" 
-                        name="email" 
-                        class="form-input" 
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-input"
                         placeholder="nama@email.com"
                         required
-                        value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"
+                        value="<?php echo htmlspecialchars($email); ?>"
                     >
                 </div>
 
                 <button type="submit" class="submit-btn">
-                    📧 Kirim Link Reset Password
+                    📧 Kirim Ulang Email Verifikasi
                 </button>
             </form>
         <?php endif; ?>
