@@ -1,6 +1,14 @@
 <?php
 require_once __DIR__ . '/../config.php';
-if (!isAdmin()) redirect('/admin/login.php');
+
+// Debug: Log admin check
+error_log("Admin index.php accessed - isLoggedIn: " . (isLoggedIn() ? 'true' : 'false') . ", isAdmin: " . (isAdmin() ? 'true' : 'false'));
+error_log("Session role: " . ($_SESSION['role'] ?? 'not set') . ", is_admin: " . ($_SESSION['is_admin'] ?? 'not set'));
+
+if (!isAdmin()) {
+    error_log("Admin check failed - redirecting to login");
+    redirect('/admin/login.php');
+}
 
 // Get statistics
 $total_users = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();

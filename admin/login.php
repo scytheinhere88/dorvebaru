@@ -6,10 +6,14 @@ if (isLoggedIn() && isAdmin()) {
 }
 
 $error = '';
+$debug_info = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
+
+    // Start output buffering to prevent "headers already sent" issue
+    ob_start();
 
     if ($email && $password) {
         try {
@@ -27,16 +31,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['role'] = 'admin';
                 $_SESSION['is_admin'] = 1;
 
-                redirect('/admin/index.php');
+                // Clear any output buffer
+                ob_end_clean();
+
+                // Force redirect with multiple methods
+                if (!headers_sent()) {
+                    header("Location: /admin/index.php");
+                    exit();
+                } else {
+                    echo '<script>window.location.href="/admin/index.php";</script>';
+                    echo '<noscript><meta http-equiv="refresh" content="0;url=/admin/index.php"></noscript>';
+                    exit();
+                }
             } else {
+                ob_end_clean();
                 $error = 'Invalid email or password';
+                $debug_info = "Login attempt for: $email - " . ($user ? "User found but password mismatch" : "User not found");
                 error_log("Failed admin login attempt for: $email");
             }
         } catch (Exception $e) {
+            ob_end_clean();
             $error = 'System error. Please try again.';
+            $debug_info = "Exception: " . $e->getMessage();
             error_log("Admin login error: " . $e->getMessage());
         }
     } else {
+        ob_end_clean();
         $error = 'Please fill all fields';
     }
 }
@@ -185,10 +205,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="login-subtitle">Admin Panel Login</div>
 
         <?php if ($error): ?>
-            <div class="error"><?php echo htmlspecialchars($error); ?></div>
+            <div class="error">
+                <?php echo htmlspecialchars($error); ?>
+                <?php if ($debug_info): ?>
+                    <br><small style="opacity: 0.7;"><?php echo htmlspecialchars($debug_info); ?></small>
+                <?php endif; ?>
+            </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$error): ?>
+            <div style="background: #D1FAE5; padding: 16px; border-radius: 6px; margin-bottom: 20px; color: #065F46;">
+                <strong>Login successful! Redirecting...</strong><br>
+                <small>If not redirected automatically, <a href="/admin/index.php" style="color: #065F46; font-weight: 600;">click here</a></small>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST" id="loginForm">
             <div class="form-group">
                 <label for="email">Email Address</label>
                 <input type="email" id="email" name="email" required>
@@ -206,5 +238,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="/index.php">← Back to Website</a>
         </div>
     </div>
+
+    <script>
+        // Debug logging
+        console.log('Admin login page loaded');
+        console.log('Form element:', document.getElementById('loginForm'));
+
+        // Add submit event listener for debugging
+        const form = document.getElementById('loginForm');
+        const submitBtn = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function(e) {
+            console.log('Form submitted!');
+            console.log('Form method:', form.method);
+            console.log('Form action:', form.action || 'current page');
+
+            // Disable submit button to prevent double submit
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+            submitBtn.style.opacity = '0.7';
+
+            // Re-enable after 5 seconds if still on page
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login to Admin';
+                submitBtn.style.opacity = '1';
+                console.error('Form submission timeout - page did not redirect');
+            }, 5000);
+        });
+
+        // Check if session storage has redirect loop flag
+        if (sessionStorage.getItem('admin_login_attempt')) {
+            const attempts = parseInt(sessionStorage.getItem('admin_login_attempt'));
+            console.warn('Login attempt count:', attempts);
+
+            if (attempts > 3) {
+                alert('Multiple login attempts detected. Please clear browser cache and try again.\n\nChrome: Ctrl+Shift+Delete\nSelect "Cookies and other site data"\nTime range: "All time"\nClick "Clear data"');
+                sessionStorage.removeItem('admin_login_attempt');
+            } else {
+                sessionStorage.setItem('admin_login_attempt', attempts + 1);
+            }
+        } else {
+            sessionStorage.setItem('admin_login_attempt', '1');
+        }
+    </script>
 </body>
 </html>
