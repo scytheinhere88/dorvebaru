@@ -32,14 +32,15 @@ if ($search) {
 
 $where_sql = implode(' AND ', $where_conditions);
 
-// Get products with stock info
+// Get products with stock info and primary image from product_images table
 $sql = "SELECT p.*, c.name as category_name,
         COALESCE(
             (SELECT SUM(stock)
              FROM product_variants
              WHERE product_id = p.id),
         0) as total_stock,
-        (SELECT COUNT(*) FROM product_variants WHERE product_id = p.id) as variant_count
+        (SELECT COUNT(*) FROM product_variants WHERE product_id = p.id) as variant_count,
+        (SELECT image_path FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) as primary_image
         FROM products p
         LEFT JOIN categories c ON p.category_id = c.id
         WHERE {$where_sql}
@@ -256,8 +257,17 @@ include __DIR__ . '/../includes/admin-header.php';
                     $is_out_of_stock = ($product['total_stock'] <= 0);
                 ?>
                     <div class="product-item">
-                        <img src="<?php echo $product['image'] ? $product['image'] : 'https://via.placeholder.com/100'; ?>"
-                             class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        <?php
+                        $imageSrc = 'https://via.placeholder.com/100';
+                        if ($product['primary_image']) {
+                            $imageSrc = '/' . $product['primary_image'];
+                        } elseif ($product['image']) {
+                            $imageSrc = $product['image'];
+                        }
+                        ?>
+                        <img src="<?php echo htmlspecialchars($imageSrc); ?>"
+                             class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>"
+                             onerror="this.src='https://via.placeholder.com/100'">
                         <div class="product-info">
                             <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                             <div class="product-meta">
@@ -286,7 +296,15 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="product-list">
             <?php foreach ($products_by_gender['women'] as $product): $is_out_of_stock = ($product['total_stock'] <= 0); ?>
                 <div class="product-item">
-                    <img src="<?php echo $product['image'] ?: 'https://via.placeholder.com/100'; ?>" class="product-image" alt="">
+                    <?php
+                    $imageSrc = 'https://via.placeholder.com/100';
+                    if ($product['primary_image']) {
+                        $imageSrc = '/' . $product['primary_image'];
+                    } elseif ($product['image']) {
+                        $imageSrc = $product['image'];
+                    }
+                    ?>
+                    <img src="<?php echo htmlspecialchars($imageSrc); ?>" class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>" onerror="this.src='https://via.placeholder.com/100'">
                     <div class="product-info">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                         <div class="product-meta">
@@ -315,7 +333,15 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="product-list">
             <?php foreach ($products_by_gender['men'] as $product): $is_out_of_stock = ($product['total_stock'] <= 0); ?>
                 <div class="product-item">
-                    <img src="<?php echo $product['image'] ?: 'https://via.placeholder.com/100'; ?>" class="product-image" alt="">
+                    <?php
+                    $imageSrc = 'https://via.placeholder.com/100';
+                    if ($product['primary_image']) {
+                        $imageSrc = '/' . $product['primary_image'];
+                    } elseif ($product['image']) {
+                        $imageSrc = $product['image'];
+                    }
+                    ?>
+                    <img src="<?php echo htmlspecialchars($imageSrc); ?>" class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>" onerror="this.src='https://via.placeholder.com/100'">
                     <div class="product-info">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                         <div class="product-meta">
@@ -344,7 +370,15 @@ include __DIR__ . '/../includes/admin-header.php';
         <div class="product-list">
             <?php foreach ($products_by_gender['unisex'] as $product): $is_out_of_stock = ($product['total_stock'] <= 0); ?>
                 <div class="product-item">
-                    <img src="<?php echo $product['image'] ?: 'https://via.placeholder.com/100'; ?>" class="product-image" alt="">
+                    <?php
+                    $imageSrc = 'https://via.placeholder.com/100';
+                    if ($product['primary_image']) {
+                        $imageSrc = '/' . $product['primary_image'];
+                    } elseif ($product['image']) {
+                        $imageSrc = $product['image'];
+                    }
+                    ?>
+                    <img src="<?php echo htmlspecialchars($imageSrc); ?>" class="product-image" alt="<?php echo htmlspecialchars($product['name']); ?>" onerror="this.src='https://via.placeholder.com/100'">
                     <div class="product-info">
                         <h3><?php echo htmlspecialchars($product['name']); ?></h3>
                         <div class="product-meta">
