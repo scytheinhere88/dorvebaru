@@ -46,11 +46,11 @@ try {
     // Create wallet transaction record
     $stmt = $pdo->prepare("
         INSERT INTO wallet_transactions
-        (user_id, type, amount, balance_before, balance_after, description, payment_status, reference_id, created_at)
+        (user_id, type, amount, balance_before, balance_after, description, status, payment_status, reference_id, created_at)
         VALUES (?, 'topup', ?,
             (SELECT wallet_balance - ? FROM users WHERE id = ?),
             (SELECT wallet_balance FROM users WHERE id = ?),
-            ?, 'success', ?, NOW())
+            ?, 'approved', 'paid', ?, NOW())
     ");
     
     $description = 'Wallet topup approved by admin';
