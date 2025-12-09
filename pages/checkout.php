@@ -1568,18 +1568,43 @@ function fetchShippingRates(lat, lng, postalCode) {
 
         if (data.success && data.rates && data.rates.length > 0) {
             renderShippingRates(data.rates);
+
+            // Show warning if postal code is missing (helps improve delivery options)
+            if (!postalCode || postalCode === '') {
+                const warning = document.createElement('div');
+                warning.style.cssText = 'margin-top: 16px; padding: 12px 16px; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px;';
+                warning.innerHTML = `
+                    <div style="font-size: 13px; color: #92400E; font-weight: 600; margin-bottom: 4px;">⚠️ Postal Code Missing</div>
+                    <div style="font-size: 12px; color: #78350F; line-height: 1.5;">
+                        Adding a postal code to this address may unlock more delivery options.
+                        <a href="/member/address-book.php" style="color: #92400E; text-decoration: underline; font-weight: 700;">Update address</a>
+                    </div>
+                `;
+                container.appendChild(warning);
+            }
         } else if (data.success && data.rates && data.rates.length === 0) {
             // No rates available - show helpful message
+            const hasPostal = postalCode && postalCode !== '';
             let errorMsg = '<div style="text-align: center; padding: 40px 20px; background: #FEF3C7; border-radius: 12px; border: 2px solid #F59E0B;">';
             errorMsg += '<div style="font-size: 32px; margin-bottom: 12px;">📦</div>';
             errorMsg += '<div style="font-size: 18px; font-weight: 700; color: #92400E; margin-bottom: 8px;">No Shipping Options Available</div>';
-            errorMsg += '<div style="font-size: 14px; color: #78350F; line-height: 1.6;">We couldn\'t find shipping options for this address. This might be because:</div>';
-            errorMsg += '<ul style="text-align: left; margin: 16px auto 0; max-width: 400px; color: #78350F; font-size: 14px;">';
-            errorMsg += '<li>The address is incomplete or invalid</li>';
-            errorMsg += '<li>No couriers service this area yet</li>';
-            errorMsg += '<li>Postal code is missing or incorrect</li>';
+            errorMsg += '<div style="font-size: 14px; color: #78350F; line-height: 1.6; margin-bottom: 16px;">We couldn\'t find shipping options for this address.</div>';
+
+            if (!hasPostal) {
+                errorMsg += '<div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 16px; border: 2px solid #F59E0B;">';
+                errorMsg += '<div style="font-size: 16px; font-weight: 700; color: #DC2626; margin-bottom: 8px;">⚠️ Postal Code Required</div>';
+                errorMsg += '<div style="font-size: 14px; color: #374151; line-height: 1.6; margin-bottom: 16px;">This address is missing a postal code, which is needed to calculate accurate shipping rates.</div>';
+                errorMsg += '<a href="/member/address-book.php" style="display: inline-block; padding: 12px 24px; background: #EF4444; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 14px;">➕ Add Postal Code</a>';
+                errorMsg += '</div>';
+            }
+
+            errorMsg += '<details style="margin-top: 16px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;"><summary style="cursor: pointer; color: #92400E; font-weight: 600; font-size: 13px;">Why is this happening?</summary>';
+            errorMsg += '<ul style="margin-top: 12px; color: #78350F; font-size: 13px; line-height: 1.6;">';
+            errorMsg += '<li>No postal code or GPS coordinates</li>';
+            errorMsg += '<li>Address is outside courier service areas</li>';
+            errorMsg += '<li>Distance is too far from store</li>';
             errorMsg += '</ul>';
-            errorMsg += '<div style="margin-top: 20px; font-size: 13px; color: #92400E; font-weight: 600;">💡 Try adding a different address with GPS coordinates</div>';
+            errorMsg += '</details>';
             errorMsg += '</div>';
             container.innerHTML = errorMsg;
         } else {

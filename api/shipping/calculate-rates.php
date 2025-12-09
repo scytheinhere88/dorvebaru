@@ -175,7 +175,8 @@ try {
             $originPostal = $storeSettings['store_postal_code'] ?? '20719';
             $destPostal = $destination['postal_code'] ?? '';
 
-            $originLat = floatval($storeSettings['store_latitude'] ?? -3.5952);
+            // FIX: Binjai is NORTH of equator (+3.5952), not SOUTH (-3.5952)!
+            $originLat = floatval($storeSettings['store_latitude'] ?? 3.5952);
             $originLng = floatval($storeSettings['store_longitude'] ?? 98.5006);
             $destLat = floatval($destination['latitude'] ?? 0);
             $destLng = floatval($destination['longitude'] ?? 0);
@@ -196,6 +197,9 @@ try {
             // Use minimum 3km if distance is 0 or very small (same location)
             $calcDistance = $distance > 0 ? $distance : 3;
 
+            // Log distance calculation for debugging
+            error_log("Distance Calculation: Origin ({$originLat}, {$originLng}) -> Dest ({$destLat}, {$destLng}) = {$distance}km (calc: {$calcDistance}km)");
+
             // Check if same area (Sumut region - postal codes starting with 20, 21, 22)
             $isSameRegion = false;
             if (!empty($destPostal) && strlen($destPostal) >= 2) {
@@ -204,8 +208,10 @@ try {
             }
 
             // Offer local delivery options for short distances or same region
+            error_log("Local Delivery Check: Distance = {$distance}km, Calc = {$calcDistance}km, isSameRegion = " . ($isSameRegion ? 'true' : 'false') . ", Origin Postal: $originPostal, Dest Postal: $destPostal");
+
             if (($distance >= 0 && $distance <= 100) || $isSameRegion) {
-                error_log("Local delivery detected: Distance = {$distance}km (calc: {$calcDistance}km), Origin Postal: $originPostal, Dest Postal: $destPostal");
+                error_log("✅ Local delivery TRIGGERED!");
 
                 // === SMART PRICING SYSTEM WITH MARKUP ===
                 // Real cost calculation + markup untuk profit
@@ -311,6 +317,8 @@ try {
                 usort($rates, function($a, $b) {
                     return $a['price'] - $b['price'];
                 });
+            } else {
+                error_log("❌ Local delivery NOT triggered: Distance ({$distance}km) > 100km AND not same region (postal: $destPostal)");
             }
         }
 
