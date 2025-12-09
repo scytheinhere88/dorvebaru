@@ -122,7 +122,7 @@ try {
 
                 // Update total_topup for order (count as topup for tier calculation)
                 $stmt = $pdo->prepare("UPDATE users SET total_topup = total_topup + ? WHERE id = ?");
-                $stmt->execute([$order['final_total'], $order['user_id']]);
+                $stmt->execute([$order['total_amount'], $order['user_id']]);
 
                 // Update user tier
                 updateUserTier($pdo, $order['user_id']);
@@ -167,7 +167,7 @@ try {
 
             // Update total_topup for order (count as topup for tier calculation)
             $stmt = $pdo->prepare("UPDATE users SET total_topup = total_topup + ? WHERE id = ?");
-            $stmt->execute([$order['final_total'], $order['user_id']]);
+            $stmt->execute([$order['total_amount'], $order['user_id']]);
 
             // Update user tier
             updateUserTier($pdo, $order['user_id']);

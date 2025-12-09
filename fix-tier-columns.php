@@ -56,7 +56,7 @@ try {
 
             // Calculate total from paid orders via Midtrans
             $stmt = $pdo->prepare("
-                SELECT COALESCE(SUM(final_total), 0) as total
+                SELECT COALESCE(SUM(total_amount), 0) as total
                 FROM orders
                 WHERE user_id = ? AND payment_status = 'paid' AND payment_method = 'midtrans'
             ");
