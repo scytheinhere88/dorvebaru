@@ -252,65 +252,126 @@ include __DIR__ . '/../includes/header.php';
     gap: 20px;
 }
 
-/* Shipping/Payment Option Cards */
+/* Shipping/Payment Option Cards - PROFESSIONAL LUXURY */
 .option-card {
     display: flex;
     align-items: center;
-    padding: 20px 24px;
+    padding: 24px 28px;
     border: 2px solid #E5E7EB;
-    border-radius: 14px;
+    border-radius: 16px;
     margin-bottom: 16px;
     cursor: pointer;
-    transition: all 0.3s;
-    background: #F9FAFB;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    background: white;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.option-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 0;
+}
+
+.option-card:hover::before {
+    width: 100%;
 }
 
 .option-card:hover {
     border-color: #667EEA;
-    background: white;
-    transform: translateX(4px);
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+    transform: translateX(6px) translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
 }
 
 .option-card.selected {
     border-color: #667EEA;
-    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.25);
+    border-width: 3px;
+    background: linear-gradient(135deg, #F3F4FF 0%, #E8EBFF 100%);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transform: translateX(6px);
+}
+
+.option-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .option-card input[type="radio"] {
-    width: 22px;
-    height: 22px;
-    margin-right: 16px;
+    width: 24px;
+    height: 24px;
+    margin-right: 20px;
     cursor: pointer;
     flex-shrink: 0;
+    accent-color: #667EEA;
+    position: relative;
+    z-index: 1;
 }
 
 .option-card-content {
     flex: 1;
+    position: relative;
+    z-index: 1;
 }
 
 .option-card-name {
-    font-size: 16px;
+    font-size: 17px;
     font-weight: 700;
     color: #1F2937;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+}
+
+.option-card.selected .option-card-name {
+    color: #4338CA;
 }
 
 .option-card-desc {
     font-size: 14px;
     color: #6B7280;
-    line-height: 1.5;
+    line-height: 1.6;
+    margin-top: 4px;
+}
+
+.option-card.selected .option-card-desc {
+    color: #4338CA;
+    font-weight: 500;
 }
 
 .option-card-price {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 20px;
+    font-weight: 800;
     color: #667EEA;
-    margin-left: 12px;
+    margin-left: 16px;
     flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    letter-spacing: -0.02em;
+}
+
+.option-card.selected .option-card-price {
+    color: #4338CA;
+    font-size: 22px;
 }
 
 .option-card.disabled {
@@ -1453,34 +1514,92 @@ function fetchShippingRates(lat, lng, postalCode) {
     .then(r => r.json())
     .then(data => {
         console.log('Shipping rates response:', data);
+
         if (data.success && data.rates && data.rates.length > 0) {
             renderShippingRates(data.rates);
+        } else if (data.success && data.rates && data.rates.length === 0) {
+            // No rates available - show helpful message
+            let errorMsg = '<div style="text-align: center; padding: 40px 20px; background: #FEF3C7; border-radius: 12px; border: 2px solid #F59E0B;">';
+            errorMsg += '<div style="font-size: 32px; margin-bottom: 12px;">📦</div>';
+            errorMsg += '<div style="font-size: 18px; font-weight: 700; color: #92400E; margin-bottom: 8px;">No Shipping Options Available</div>';
+            errorMsg += '<div style="font-size: 14px; color: #78350F; line-height: 1.6;">We couldn\'t find shipping options for this address. This might be because:</div>';
+            errorMsg += '<ul style="text-align: left; margin: 16px auto 0; max-width: 400px; color: #78350F; font-size: 14px;">';
+            errorMsg += '<li>The address is incomplete or invalid</li>';
+            errorMsg += '<li>No couriers service this area yet</li>';
+            errorMsg += '<li>Postal code is missing or incorrect</li>';
+            errorMsg += '</ul>';
+            errorMsg += '<div style="margin-top: 20px; font-size: 13px; color: #92400E; font-weight: 600;">💡 Try adding a different address with GPS coordinates</div>';
+            errorMsg += '</div>';
+            container.innerHTML = errorMsg;
         } else {
-            let errorMsg = '⚠️ No shipping options available for this address';
-            if (data.error) {
-                errorMsg += '<br><small style="color: #9CA3AF; margin-top: 8px; display: block;">' + data.error + '</small>';
+            // API error
+            let errorMsg = '<div style="text-align: center; padding: 40px 20px; background: #FEE2E2; border-radius: 12px; border: 2px solid #EF4444;">';
+            errorMsg += '<div style="font-size: 32px; margin-bottom: 12px;">⚠️</div>';
+            errorMsg += '<div style="font-size: 18px; font-weight: 700; color: #991B1B; margin-bottom: 8px;">Shipping Calculation Error</div>';
+            errorMsg += '<div style="font-size: 14px; color: #7F1D1D; line-height: 1.6;">' + (data.error || 'Failed to calculate shipping rates') + '</div>';
+            if (data.debug) {
+                errorMsg += '<details style="margin-top: 16px; text-align: left; max-width: 500px; margin-left: auto; margin-right: auto;"><summary style="cursor: pointer; color: #991B1B; font-weight: 600; font-size: 13px;">Technical Details</summary>';
+                errorMsg += '<pre style="background: white; padding: 12px; border-radius: 8px; margin-top: 8px; font-size: 11px; overflow-x: auto; color: #374151;">' + JSON.stringify(data.debug, null, 2) + '</pre>';
+                errorMsg += '</details>';
             }
-            container.innerHTML = '<p style="color: #EF4444; text-align: center; padding: 40px;">' + errorMsg + '</p>';
+            errorMsg += '</div>';
+            container.innerHTML = errorMsg;
         }
     })
     .catch(e => {
-        container.innerHTML = '<p style="color: #EF4444; text-align: center; padding: 40px;">❌ Error loading shipping options<br><small style="color: #9CA3AF; margin-top: 8px; display: block;">' + e.message + '</small></p>';
+        let errorMsg = '<div style="text-align: center; padding: 40px 20px; background: #FEE2E2; border-radius: 12px; border: 2px solid #EF4444;">';
+        errorMsg += '<div style="font-size: 32px; margin-bottom: 12px;">❌</div>';
+        errorMsg += '<div style="font-size: 18px; font-weight: 700; color: #991B1B; margin-bottom: 8px;">Network Error</div>';
+        errorMsg += '<div style="font-size: 14px; color: #7F1D1D; line-height: 1.6;">Failed to connect to shipping service</div>';
+        errorMsg += '<div style="margin-top: 12px; font-size: 13px; color: #991B1B;">' + e.message + '</div>';
+        errorMsg += '</div>';
+        container.innerHTML = errorMsg;
         console.error('Shipping error:', e);
     });
 }
 
 function renderShippingRates(rates) {
     const container = document.getElementById('shipping-rates-container');
+
+    if (rates.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #9CA3AF; padding: 40px;">No shipping options available</p>';
+        return;
+    }
+
     container.innerHTML = rates.map((rate, idx) => {
-        const badge = rate.badge ? `<span style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; font-size: 10px; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 700; letter-spacing: 0.5px;">${rate.badge}</span>` : '';
-        const distanceInfo = rate.distance_km ? `<small style="color: #667EEA; font-weight: 600;">📍 ${rate.distance_km}km</small> • ` : '';
+        // Badge styling based on type
+        let badge = '';
+        if (rate.badge === 'TERCEPAT') {
+            badge = `<span style="display: inline-block; background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; margin-left: 10px; font-weight: 800; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);">⚡ ${rate.badge}</span>`;
+        } else if (rate.badge === 'HEMAT') {
+            badge = `<span style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; margin-left: 10px; font-weight: 800; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);">💰 ${rate.badge}</span>`;
+        } else if (rate.badge === 'EKONOMIS') {
+            badge = `<span style="display: inline-block; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; margin-left: 10px; font-weight: 800; letter-spacing: 0.8px; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);">📦 ${rate.badge}</span>`;
+        } else if (rate.badge) {
+            badge = `<span style="display: inline-block; background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%); color: white; font-size: 10px; padding: 5px 10px; border-radius: 8px; margin-left: 10px; font-weight: 800; letter-spacing: 0.8px;">${rate.badge}</span>`;
+        }
+
+        // Distance info with better styling
+        const distanceInfo = rate.distance_km ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: #667EEA; font-weight: 700; font-size: 13px; background: rgba(102, 126, 234, 0.1); padding: 4px 10px; border-radius: 8px; margin-right: 8px;">📍 ${rate.distance_km}km</span>` : '';
+
+        // Duration with better icon
+        const duration = rate.duration ? `<span style="display: inline-flex; align-items: center; gap: 4px; color: #1F2937; font-weight: 700; font-size: 13px; background: #F3F4F6; padding: 4px 10px; border-radius: 8px;">⏱️ ${rate.duration}</span>` : '';
+
+        // Description
+        const description = rate.description ? `<div style="margin-top: 6px; font-size: 13px; color: #6B7280; line-height: 1.5;">${rate.description}</div>` : '';
 
         return `
         <div class="option-card" onclick="selectShipping(${rate.price}, '${rate.courier_company || rate.courier_code}', '${rate.courier_service_name}', this)">
             <input type="radio" name="shipping_method" value="${idx}" id="shipping-${idx}">
             <div class="option-card-content">
                 <div class="option-card-name">${rate.courier_name} - ${rate.courier_service_name}${badge}</div>
-                <div class="option-card-desc">${distanceInfo}${rate.description || ''}<br><strong style="color: #1F2937;">⏱️ ${rate.duration || 'N/A'}</strong></div>
+                <div class="option-card-desc">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center;">
+                        ${distanceInfo}
+                        ${duration}
+                    </div>
+                    ${description}
+                </div>
             </div>
             <div class="option-card-price">Rp ${formatNumber(rate.price)}</div>
         </div>

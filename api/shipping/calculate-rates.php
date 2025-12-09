@@ -33,11 +33,20 @@ try {
         throw new Exception('No items provided');
     }
 
-    // Format items for Biteship API (clean format, no HTML)
+    // Format items for Biteship API (ULTRA CLEAN - no HTML, no special chars)
     $formatted_items = [];
     foreach ($items as $item) {
-        // Strip HTML tags from product name
-        $product_name = strip_tags($item['name'] ?? 'Product');
+        // AGGRESSIVE cleaning: Strip ALL HTML tags AND entities
+        $product_name = $item['name'] ?? 'Product';
+        $product_name = strip_tags($product_name); // Remove HTML tags
+        $product_name = html_entity_decode($product_name, ENT_QUOTES | ENT_HTML5, 'UTF-8'); // Decode entities
+        $product_name = preg_replace('/[^\w\s\-]/u', '', $product_name); // Remove special chars except space, dash, underscore
+        $product_name = trim($product_name); // Remove extra spaces
+
+        // Fallback if name is empty after cleaning
+        if (empty($product_name)) {
+            $product_name = 'Fashion Item';
+        }
 
         // Calculate price with discount
         $price = floatval($item['price'] ?? 0);
@@ -120,11 +129,12 @@ try {
 
     error_log("Courier Codes: " . $courierCodes);
 
-    // Get rates with formatted items (no HTML!)
+    // Get rates with formatted items (ULTRA CLEAN!)
     $result = $client->getRates($origin, $destination, $formatted_items, $courierCodes);
 
     error_log("Biteship API Response: " . json_encode($result));
-    
+    error_log("Biteship API Request Items: " . json_encode($formatted_items));
+
     if ($result['success']) {
         $pricing = $result['data']['pricing'] ?? [];
         
@@ -309,10 +319,30 @@ try {
             'rates' => $rates,
             'total_available' => count($rates),
             'unavailable_couriers' => $unavailableCouriers, // For debugging
-            'message' => count($rates) > 0 ? 'Rates available' : 'No couriers available for this area'
+            'message' => count($rates) > 0 ? 'Rates available' : 'No couriers available for this area',
+            'debug' => [
+                'origin' => $origin,
+                'destination' => $destination,
+                'biteship_response' => $result
+            ]
         ]);
     } else {
-        throw new Exception($result['error'] ?? 'Failed to get shipping rates');
+        // Biteship API returned error
+        $errorMessage = $result['error'] ?? 'Failed to get shipping rates from Biteship';
+        error_log("Biteship API Error: " . $errorMessage);
+
+        // Return detailed error to help debug
+        echo json_encode([
+            'success' => false,
+            'error' => $errorMessage,
+            'rates' => [],
+            'debug' => [
+                'biteship_error' => $result,
+                'origin' => $origin,
+                'destination' => $destination,
+                'items_sent' => $formatted_items
+            ]
+        ]);
     }
     
 } catch (Exception $e) {
