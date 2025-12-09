@@ -1494,8 +1494,35 @@ document.getElementById('saved-address-select')?.addEventListener('change', func
     document.getElementById('latitude').value = option.dataset.lat || '';
     document.getElementById('longitude').value = option.dataset.lng || '';
 
-    if (option.dataset.lat && option.dataset.lng) {
-        fetchShippingRates(option.dataset.lat, option.dataset.lng, option.dataset.postal);
+    const hasGPS = option.dataset.lat && option.dataset.lng;
+    const hasPostal = option.dataset.postal;
+
+    console.log('Address selected:', {
+        hasGPS: hasGPS,
+        hasPostal: hasPostal,
+        lat: option.dataset.lat,
+        lng: option.dataset.lng,
+        postal: option.dataset.postal
+    });
+
+    // FIX: Allow shipping calculation with POSTAL CODE even without GPS!
+    if (hasGPS || hasPostal) {
+        fetchShippingRates(option.dataset.lat || null, option.dataset.lng || null, option.dataset.postal || null);
+    } else {
+        // Show error: need GPS or postal code
+        const container = document.getElementById('shipping-rates-container');
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; background: #FEE2E2; border-radius: 12px; border: 2px solid #EF4444;">
+                <div style="font-size: 32px; margin-bottom: 12px;">📍</div>
+                <div style="font-size: 18px; font-weight: 700; color: #991B1B; margin-bottom: 8px;">Address Incomplete</div>
+                <div style="font-size: 14px; color: #7F1D1D; line-height: 1.6;">This address is missing GPS coordinates and postal code.</div>
+                <div style="margin-top: 16px;">
+                    <a href="/member/address-book.php" style="display: inline-block; padding: 12px 24px; background: #EF4444; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+                        ➕ Update Address
+                    </a>
+                </div>
+            </div>
+        `;
     }
 });
 
@@ -1506,17 +1533,29 @@ function fetchShippingRates(lat, lng, postalCode) {
 
     const cartItems = <?= json_encode($cart_items_clean) ?>;
 
+    // Build payload - only include non-null values
     const payload = {
-        latitude: lat,
-        longitude: lng,
         items: cartItems
     };
+
+    // Add location data if available
+    if (lat && lng) {
+        payload.latitude = lat;
+        payload.longitude = lng;
+    }
 
     if (postalCode) {
         payload.postal_code = postalCode;
     }
 
-    console.log('Fetching shipping rates with:', payload);
+    console.log('🚚 Fetching shipping rates with:', payload);
+    console.log('📍 Location info:', {
+        hasGPS: !!(lat && lng),
+        hasPostal: !!postalCode,
+        lat: lat,
+        lng: lng,
+        postal: postalCode
+    });
 
     fetch('/api/shipping/calculate-rates.php', {
         method: 'POST',
