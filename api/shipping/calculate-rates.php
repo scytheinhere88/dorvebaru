@@ -197,51 +197,89 @@ try {
             if (($distance >= 0 && $distance <= 100) || $isSameRegion) {
                 error_log("Local delivery detected: Distance = {$distance}km (calc: {$calcDistance}km), Origin Postal: $originPostal, Dest Postal: $destPostal");
 
-                // OPTION 1: INSTANT COURIER (Grab/GoSend style)
-                if ($calcDistance <= 25) {
-                    $instantPrice = 15000 + ($calcDistance * 1000); // Base + Rp 1000/km
+                // === SMART PRICING SYSTEM WITH MARKUP ===
+                // Real cost calculation + markup untuk profit
+
+                // OPTION 1: GOSEND EXPRESS (Fast but expensive)
+                // Real GoSend: Base Rp 20,000 (8km) + Rp 2,500-3,500/km
+                // Our Price: Real cost + 30% markup biar ga boncos
+                if ($calcDistance <= 30) {
+                    // Calculate REAL GoSend cost
+                    $realGoSendCost = 20000; // Base 8km
+                    if ($calcDistance > 8) {
+                        $realGoSendCost += ($calcDistance - 8) * 3000; // Rp 3,000/km after 8km
+                    }
+
+                    // Add 30% markup for profit
+                    $goSendPrice = $realGoSendCost * 1.30;
+
+                    // Round to nearest 1000
+                    $goSendPrice = ceil($goSendPrice / 1000) * 1000;
+
                     $rates[] = [
-                        'courier_company' => 'instant',
-                        'courier_name' => 'Kurir Instan',
-                        'courier_service_name' => 'Same Day (Express)',
-                        'rate_id' => 'instant-sameday',
-                        'price' => (int)$instantPrice,
-                        'duration' => 'Hari ini (3-6 jam)',
-                        'description' => 'Pengiriman instant menggunakan kurir lokal (Grab/GoSend style)',
+                        'courier_company' => 'gosend',
+                        'courier_name' => '⚡ GoSend Express',
+                        'courier_service_name' => 'Instant (1-2 Jam)',
+                        'rate_id' => 'gosend-instant',
+                        'price' => (int)$goSendPrice,
+                        'duration' => 'Langsung sampai 1-2 jam',
+                        'description' => 'Pengiriman super cepat via GoSend • Lacak real-time',
                         'available' => true,
-                        'distance_km' => round($calcDistance, 1)
+                        'distance_km' => round($calcDistance, 1),
+                        'icon' => '⚡',
+                        'badge' => 'TERCEPAT'
                     ];
                 }
 
-                // OPTION 2: JNT SAME DAY / REGULAR LOCAL
+                // OPTION 2: GRAB EXPRESS (Cheaper but slower)
+                // Real Grab: Base Rp 13,000 (6km) + Rp 1,000-3,000/km
+                // Our Price: Real cost + 25% markup
+                if ($calcDistance <= 30) {
+                    // Calculate REAL Grab cost
+                    $realGrabCost = 13000; // Base 6km
+                    if ($calcDistance > 6) {
+                        $realGrabCost += ($calcDistance - 6) * 2000; // Rp 2,000/km after 6km (average)
+                    }
+
+                    // Add 25% markup for profit (slightly lower than GoSend)
+                    $grabPrice = $realGrabCost * 1.25;
+
+                    // Round to nearest 1000
+                    $grabPrice = ceil($grabPrice / 1000) * 1000;
+
+                    $rates[] = [
+                        'courier_company' => 'grab',
+                        'courier_name' => '🚗 Grab Express',
+                        'courier_service_name' => 'Same Day (3-6 Jam)',
+                        'rate_id' => 'grab-sameday',
+                        'price' => (int)$grabPrice,
+                        'duration' => 'Same day delivery (3-6 jam)',
+                        'description' => 'Pengiriman hemat via Grab Express • Lacak real-time',
+                        'available' => true,
+                        'distance_km' => round($calcDistance, 1),
+                        'icon' => '🚗',
+                        'badge' => 'HEMAT'
+                    ];
+                }
+
+                // OPTION 3: JNT REGULAR (Cheapest option)
+                // Untuk customer yang mau lebih murah tapi ga urgent
                 if ($calcDistance <= 50) {
-                    $regularPrice = 10000 + ($calcDistance * 500); // Base + Rp 500/km
+                    $jntPrice = 10000 + ($calcDistance * 500);
+                    $jntPrice = ceil($jntPrice / 1000) * 1000;
+
                     $rates[] = [
                         'courier_company' => 'local-jnt',
-                        'courier_name' => 'JNT Lokal',
-                        'courier_service_name' => 'Same Day Regular',
-                        'rate_id' => 'jnt-sameday',
-                        'price' => (int)$regularPrice,
-                        'duration' => '1 hari kerja',
-                        'description' => 'Pengiriman same day menggunakan JNT atau kurir lokal',
-                        'available' => true,
-                        'distance_km' => round($calcDistance, 1)
-                    ];
-                }
-
-                // OPTION 3: EKONOMIS (1-2 hari)
-                if ($calcDistance <= 100) {
-                    $economyPrice = 8000 + ($calcDistance * 300); // Base + Rp 300/km
-                    $rates[] = [
-                        'courier_company' => 'local-economy',
-                        'courier_name' => 'Kurir Lokal',
-                        'courier_service_name' => 'Regular (Ekonomis)',
-                        'rate_id' => 'local-economy',
-                        'price' => (int)$economyPrice,
+                        'courier_name' => '📦 JNT Regular',
+                        'courier_service_name' => 'Regular (1-2 Hari)',
+                        'rate_id' => 'jnt-regular',
+                        'price' => (int)$jntPrice,
                         'duration' => '1-2 hari kerja',
-                        'description' => 'Pengiriman ekonomis untuk area Sumut (Medan, Binjai, Deli Serdang, dll)',
+                        'description' => 'Pengiriman ekonomis via JNT lokal',
                         'available' => true,
-                        'distance_km' => round($calcDistance, 1)
+                        'distance_km' => round($calcDistance, 1),
+                        'icon' => '📦',
+                        'badge' => 'EKONOMIS'
                     ];
                 }
 

@@ -264,6 +264,7 @@ include __DIR__ . '/../includes/header.php';
     transition: all 0.3s;
     background: #F9FAFB;
     position: relative;
+    overflow: visible;
 }
 
 .option-card:hover {
@@ -1470,16 +1471,21 @@ function fetchShippingRates(lat, lng, postalCode) {
 
 function renderShippingRates(rates) {
     const container = document.getElementById('shipping-rates-container');
-    container.innerHTML = rates.map((rate, idx) => `
-        <div class="option-card" onclick="selectShipping(${rate.price}, '${rate.courier_code}', '${rate.courier_service_name}', this)">
+    container.innerHTML = rates.map((rate, idx) => {
+        const badge = rate.badge ? `<span style="display: inline-block; background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; font-size: 10px; padding: 4px 8px; border-radius: 6px; margin-left: 8px; font-weight: 700; letter-spacing: 0.5px;">${rate.badge}</span>` : '';
+        const distanceInfo = rate.distance_km ? `<small style="color: #667EEA; font-weight: 600;">📍 ${rate.distance_km}km</small> • ` : '';
+
+        return `
+        <div class="option-card" onclick="selectShipping(${rate.price}, '${rate.courier_company || rate.courier_code}', '${rate.courier_service_name}', this)">
             <input type="radio" name="shipping_method" value="${idx}" id="shipping-${idx}">
             <div class="option-card-content">
-                <div class="option-card-name">${rate.courier_name} - ${rate.courier_service_name}</div>
-                <div class="option-card-desc">${rate.description || ''} • ${rate.duration || 'N/A'}</div>
+                <div class="option-card-name">${rate.courier_name} - ${rate.courier_service_name}${badge}</div>
+                <div class="option-card-desc">${distanceInfo}${rate.description || ''}<br><strong style="color: #1F2937;">⏱️ ${rate.duration || 'N/A'}</strong></div>
             </div>
             <div class="option-card-price">Rp ${formatNumber(rate.price)}</div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function selectShipping(price, code, service, element) {
