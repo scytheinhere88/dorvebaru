@@ -41,6 +41,10 @@ try {
     $discount = [];
     
     foreach ($vouchers as $voucher) {
+        // Check if user's cart meets minimum purchase requirement
+        $isEligible = $cartTotal >= floatval($voucher['min_purchase']);
+        $shortfall = $isEligible ? 0 : (floatval($voucher['min_purchase']) - $cartTotal);
+
         $voucherData = [
             'id' => $voucher['id'],
             'code' => $voucher['code'],
@@ -55,10 +59,11 @@ try {
             'terms_conditions' => $voucher['terms_conditions'],
             'usage_count' => intval($voucher['user_usage_count']),
             'max_usage' => intval($voucher['max_usage_per_user']),
-            'is_eligible' => (bool)$voucher['is_eligible'],
+            'is_eligible' => $isEligible,
+            'shortfall_amount' => $shortfall, // How much more needed
             'valid_until' => $voucher['valid_until']
         ];
-        
+
         if ($voucher['type'] === 'free_shipping') {
             $freeShipping[] = $voucherData;
         } else {

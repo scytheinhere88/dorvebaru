@@ -61,8 +61,8 @@ try {
     die("<h1>Error - Cart.php</h1><pre>" . htmlspecialchars($e->getMessage()) . "\n\nStack trace:\n" . htmlspecialchars($e->getTraceAsString()) . "</pre>");
 }
 
-$shipping = $subtotal >= 500000 ? 0 : 25000;
-$total = $subtotal + $shipping;
+// Shipping will be calculated at checkout based on selected address
+$total = $subtotal;
 
 $page_title = 'Keranjang Belanja - Checkout Aman & Mudah | Dorve House';
 $page_description = 'Lihat keranjang belanja Anda. Lanjutkan ke checkout untuk menyelesaikan pembelian baju wanita online. Gratis ongkir min Rp500.000, pembayaran aman, COD tersedia.';
@@ -468,18 +468,18 @@ include __DIR__ . '/../includes/header.php';
                     <span><?php echo formatPrice($subtotal); ?></span>
                 </div>
 
-                <div class="summary-row">
-                    <span>Shipping</span>
-                    <span><?php echo $shipping === 0 ? 'FREE' : formatPrice($shipping); ?></span>
+                <!-- Note: Shipping will be calculated at checkout -->
+                <div style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); padding: 14px 18px; border-radius: 12px; margin: 16px 0; border-left: 4px solid #667EEA;">
+                    <p style="font-size: 13px; color: #4338CA; font-weight: 600; margin-bottom: 4px;">📦 Shipping Cost</p>
+                    <p style="font-size: 12px; color: #4F46E5; line-height: 1.5;">Shipping cost will be calculated at checkout based on your delivery address</p>
+                    <?php if ($subtotal >= 500000): ?>
+                        <p style="font-size: 12px; color: #10B981; margin-top: 8px; font-weight: 700;">🎉 You qualify for FREE SHIPPING (up to Rp 35,000)!</p>
+                    <?php else: ?>
+                        <p style="font-size: 12px; color: #F59E0B; margin-top: 8px; font-weight: 700;">
+                            💰 Add <?php echo formatPrice(500000 - $subtotal); ?> more for FREE SHIPPING!
+                        </p>
+                    <?php endif; ?>
                 </div>
-
-                <?php if ($shipping === 0): ?>
-                    <p style="font-size: 12px; color: #2E7D32; margin-top: 8px;">✓ Free shipping applied!</p>
-                <?php else: ?>
-                    <p style="font-size: 12px; color: var(--grey); margin-top: 8px;">
-                        Add <?php echo formatPrice(500000 - $subtotal); ?> more for free shipping
-                    </p>
-                <?php endif; ?>
 
                 <div class="summary-total">
                     <span>Total</span>

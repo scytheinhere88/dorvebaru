@@ -1333,6 +1333,7 @@ include __DIR__ . '/../includes/header.php';
             <!-- Hidden Fields -->
             <input type="hidden" name="voucher_discount" id="voucher-discount-input" value="0">
             <input type="hidden" name="voucher_free_shipping" id="voucher-free-shipping-input" value="0">
+            <input type="hidden" name="auto_free_shipping" id="auto-free-shipping-input" value="0">
             <input type="hidden" name="voucher_codes" id="voucher-codes-input" value="">
             <input type="hidden" name="shipping_cost" id="shipping-cost-input" value="0">
             <input type="hidden" name="courier_code" id="courier-code-input" value="">
@@ -1390,12 +1391,17 @@ include __DIR__ . '/../includes/header.php';
         </div>
 
         <div class="summary-line" id="summary-discount-row" style="display: none;">
-            <span class="summary-line-label">Discount</span>
+            <span class="summary-line-label">Voucher Discount</span>
             <span class="summary-line-value" id="summary-discount" style="color: #10B981;">- Rp 0</span>
         </div>
 
+        <div class="summary-line" id="summary-auto-freeship-row" style="display: none;">
+            <span class="summary-line-label">🎉 Free Shipping Promo</span>
+            <span class="summary-line-value" id="summary-auto-freeship" style="color: #10B981; font-weight: 700;">- Rp 0</span>
+        </div>
+
         <div class="summary-line" id="summary-freeship-row" style="display: none;">
-            <span class="summary-line-label">Free Shipping</span>
+            <span class="summary-line-label">Free Shipping Voucher</span>
             <span class="summary-line-value" id="summary-freeship" style="color: #10B981;">- Rp 0</span>
         </div>
 
@@ -1669,17 +1675,25 @@ function renderVouchers() {
     if (availableVouchers.free_shipping.length === 0) {
         fsContainer.innerHTML = '<p style="color: #6B7280; text-align: center; padding: 40px;">No free shipping vouchers available</p>';
     } else {
-        fsContainer.innerHTML = availableVouchers.free_shipping.map(v => `
-            <div class="voucher-card-mini ${selectedVouchers.free_shipping?.id === v.id ? 'selected' : ''}"
-                 onclick='selectVoucher("free_shipping", ${JSON.stringify(v).replace(/'/g, "&#39;")})'>
+        fsContainer.innerHTML = availableVouchers.free_shipping.map(v => {
+            const isDisabled = !v.is_eligible;
+            const disabledClass = isDisabled ? 'disabled' : '';
+            const disabledStyle = isDisabled ? 'opacity: 0.5; cursor: not-allowed; pointer-events: none;' : '';
+
+            return `
+            <div class="voucher-card-mini ${selectedVouchers.free_shipping?.id === v.id ? 'selected' : ''} ${disabledClass}"
+                 style="${disabledStyle}"
+                 onclick='${isDisabled ? '' : `selectVoucher("free_shipping", ${JSON.stringify(v).replace(/'/g, "&#39;")})`}'>
                 <div class="voucher-code-mini">${v.code}</div>
                 <div class="voucher-name-mini">${v.name}</div>
                 <div class="voucher-value-mini">FREE SHIPPING</div>
                 ${v.discount_value ? `<div class="voucher-condition-mini">Max: Rp ${formatNumber(v.discount_value)}</div>` : ''}
                 ${v.min_purchase ? `<div class="voucher-condition-mini">📦 Min: Rp ${formatNumber(v.min_purchase)}</div>` : ''}
                 <div class="voucher-condition-mini">🔢 ${v.max_usage - v.usage_count} uses left</div>
+                ${isDisabled ? `<div class="voucher-condition-mini" style="color: #EF4444; font-weight: 700; margin-top: 8px; background: #FEE2E2; padding: 6px 10px; border-radius: 6px;">⚠️ Add Rp ${formatNumber(v.shortfall_amount)} more</div>` : ''}
             </div>
-        `).join('');
+        `;
+        }).join('');
     }
 
     // Discount
@@ -1688,18 +1702,24 @@ function renderVouchers() {
         dcContainer.innerHTML = '<p style="color: #6B7280; text-align: center; padding: 40px;">No discount vouchers available</p>';
     } else {
         dcContainer.innerHTML = availableVouchers.discount.map(v => {
-            let valueText = v.discount_type === 'percentage' 
-                ? `${v.discount_value}% OFF` 
+            let valueText = v.discount_type === 'percentage'
+                ? `${v.discount_value}% OFF`
                 : `Rp ${formatNumber(v.discount_value)} OFF`;
-            
+
+            const isDisabled = !v.is_eligible;
+            const disabledClass = isDisabled ? 'disabled' : '';
+            const disabledStyle = isDisabled ? 'opacity: 0.5; cursor: not-allowed; pointer-events: none;' : '';
+
             return `
-                <div class="voucher-card-mini ${selectedVouchers.discount?.id === v.id ? 'selected' : ''}"
-                     onclick='selectVoucher("discount", ${JSON.stringify(v).replace(/'/g, "&#39;")})'>
+                <div class="voucher-card-mini ${selectedVouchers.discount?.id === v.id ? 'selected' : ''} ${disabledClass}"
+                     style="${disabledStyle}"
+                     onclick='${isDisabled ? '' : `selectVoucher("discount", ${JSON.stringify(v).replace(/'/g, "&#39;")})`}'>
                     <div class="voucher-code-mini">${v.code}</div>
                     <div class="voucher-name-mini">${v.name}</div>
                     <div class="voucher-value-mini">${valueText}</div>
                     ${v.min_purchase ? `<div class="voucher-condition-mini">📦 Min: Rp ${formatNumber(v.min_purchase)}</div>` : ''}
                     <div class="voucher-condition-mini">🔢 ${v.max_usage - v.usage_count} uses left</div>
+                    ${isDisabled ? `<div class="voucher-condition-mini" style="color: #EF4444; font-weight: 700; margin-top: 8px; background: #FEE2E2; padding: 6px 10px; border-radius: 6px;">⚠️ Add Rp ${formatNumber(v.shortfall_amount)} more</div>` : ''}
                 </div>
             `;
         }).join('');
@@ -1763,8 +1783,31 @@ function recalculateTotal() {
     let total = subtotal + currentShippingCost;
     let discountAmount = 0;
     let freeShippingAmount = 0;
+    let autoFreeShippingAmount = 0;
 
-    // Calculate discount
+    // AUTO FREE SHIPPING SYSTEM (Min 500K, Max 35K discount)
+    const FREE_SHIPPING_MIN = 500000;
+    const FREE_SHIPPING_MAX_DISCOUNT = 35000;
+
+    if (subtotal >= FREE_SHIPPING_MIN && currentShippingCost > 0) {
+        // Auto apply free shipping discount (max 35K)
+        autoFreeShippingAmount = Math.min(currentShippingCost, FREE_SHIPPING_MAX_DISCOUNT);
+        total -= autoFreeShippingAmount;
+
+        // Show strikethrough on shipping cost
+        const shippingDisplay = document.getElementById('summary-shipping');
+        if (shippingDisplay) {
+            shippingDisplay.innerHTML = `<span style="text-decoration: line-through; color: #9CA3AF;">Rp ${formatNumber(currentShippingCost)}</span> <span style="color: #10B981; font-weight: 700; margin-left: 8px;">FREE!</span>`;
+        }
+    } else {
+        // No auto free shipping - show normal shipping cost
+        const shippingDisplay = document.getElementById('summary-shipping');
+        if (shippingDisplay) {
+            shippingDisplay.textContent = 'Rp ' + formatNumber(currentShippingCost);
+        }
+    }
+
+    // Calculate discount from voucher
     if (selectedVouchers.discount) {
         const v = selectedVouchers.discount;
         if (v.discount_type === 'percentage') {
@@ -1778,17 +1821,23 @@ function recalculateTotal() {
         total -= discountAmount;
     }
 
-    // Calculate free shipping
-    if (selectedVouchers.free_shipping) {
+    // Calculate free shipping from voucher (only if no auto free shipping)
+    if (selectedVouchers.free_shipping && autoFreeShippingAmount === 0) {
         const v = selectedVouchers.free_shipping;
         freeShippingAmount = currentShippingCost;
         if (v.discount_value) {
             freeShippingAmount = Math.min(freeShippingAmount, v.discount_value);
         }
         total -= freeShippingAmount;
+
+        // Show strikethrough on shipping cost for voucher
+        const shippingDisplay = document.getElementById('summary-shipping');
+        if (shippingDisplay) {
+            shippingDisplay.innerHTML = `<span style="text-decoration: line-through; color: #9CA3AF;">Rp ${formatNumber(currentShippingCost)}</span> <span style="color: #10B981; font-weight: 700; margin-left: 8px;">FREE!</span>`;
+        }
     }
 
-    // Update display
+    // Update discount display
     if (discountAmount > 0) {
         document.getElementById('summary-discount').textContent = '- Rp ' + formatNumber(discountAmount);
         document.getElementById('summary-discount-row').style.display = 'flex';
@@ -1796,6 +1845,15 @@ function recalculateTotal() {
         document.getElementById('summary-discount-row').style.display = 'none';
     }
 
+    // Update auto free shipping display
+    if (autoFreeShippingAmount > 0) {
+        document.getElementById('summary-auto-freeship').textContent = '- Rp ' + formatNumber(autoFreeShippingAmount);
+        document.getElementById('summary-auto-freeship-row').style.display = 'flex';
+    } else {
+        document.getElementById('summary-auto-freeship-row').style.display = 'none';
+    }
+
+    // Update voucher free shipping display
     if (freeShippingAmount > 0) {
         document.getElementById('summary-freeship').textContent = '- Rp ' + formatNumber(freeShippingAmount);
         document.getElementById('summary-freeship-row').style.display = 'flex';
@@ -1807,8 +1865,9 @@ function recalculateTotal() {
 
     // Update hidden inputs
     document.getElementById('voucher-discount-input').value = discountAmount;
-    document.getElementById('voucher-free-shipping-input').value = freeShippingAmount;
-    
+    document.getElementById('voucher-free-shipping-input').value = freeShippingAmount + autoFreeShippingAmount;
+    document.getElementById('auto-free-shipping-input').value = autoFreeShippingAmount;
+
     const voucherCodes = [
         selectedVouchers.free_shipping?.code,
         selectedVouchers.discount?.code
