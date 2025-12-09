@@ -276,6 +276,19 @@ include __DIR__ . '/../../includes/header.php';
         background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
         color: white;
         position: relative;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .voucher-icon {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        background: white;
+        padding: 8px;
+        border-radius: 12px;
+        flex-shrink: 0;
     }
 
     .voucher-header.discount-header {
@@ -386,6 +399,20 @@ include __DIR__ . '/../../includes/header.php';
         .voucher-grid {
             grid-template-columns: 1fr;
         }
+
+        .voucher-icon {
+            width: 50px;
+            height: 50px;
+        }
+
+        .voucher-header {
+            padding: 20px;
+            gap: 12px;
+        }
+
+        .voucher-code {
+            font-size: 20px;
+        }
     }
 </style>
 
@@ -433,9 +460,14 @@ include __DIR__ . '/../../includes/header.php';
                     <?php foreach ($discountVouchers as $voucher): ?>
                         <div class="voucher-card discount">
                             <div class="voucher-header discount-header">
-                                <div class="voucher-type">💰 Discount Voucher</div>
-                                <div class="voucher-code"><?= htmlspecialchars($voucher['code']) ?></div>
-                                <div class="voucher-name"><?= htmlspecialchars($voucher['name']) ?></div>
+                                <?php if (!empty($voucher['image'])): ?>
+                                    <img src="/uploads/vouchers/<?= htmlspecialchars($voucher['image']) ?>" alt="Voucher Icon" class="voucher-icon">
+                                <?php endif; ?>
+                                <div style="flex: 1;">
+                                    <div class="voucher-type">💰 Discount Voucher</div>
+                                    <div class="voucher-code"><?= htmlspecialchars($voucher['code']) ?></div>
+                                    <div class="voucher-name"><?= htmlspecialchars($voucher['name']) ?></div>
+                                </div>
                             </div>
                             
                             <div class="voucher-body">
@@ -504,9 +536,14 @@ include __DIR__ . '/../../includes/header.php';
                     <?php foreach ($shippingVouchers as $voucher): ?>
                         <div class="voucher-card shipping">
                             <div class="voucher-header shipping-header">
-                                <div class="voucher-type">🚚 Free Shipping</div>
-                                <div class="voucher-code"><?= htmlspecialchars($voucher['code']) ?></div>
-                                <div class="voucher-name"><?= htmlspecialchars($voucher['name']) ?></div>
+                                <?php if (!empty($voucher['image'])): ?>
+                                    <img src="/uploads/vouchers/<?= htmlspecialchars($voucher['image']) ?>" alt="Voucher Icon" class="voucher-icon">
+                                <?php endif; ?>
+                                <div style="flex: 1;">
+                                    <div class="voucher-type">🚚 Free Shipping</div>
+                                    <div class="voucher-code"><?= htmlspecialchars($voucher['code']) ?></div>
+                                    <div class="voucher-name"><?= htmlspecialchars($voucher['name']) ?></div>
+                                </div>
                             </div>
                             
                             <div class="voucher-body">
