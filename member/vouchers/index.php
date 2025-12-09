@@ -45,6 +45,10 @@ include __DIR__ . '/../../includes/header.php';
 ?>
 
 <style>
+    /* Ensure emoji support with proper font stack */
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     .prof-wrapper {
