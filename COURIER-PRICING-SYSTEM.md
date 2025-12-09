@@ -1,31 +1,40 @@
-# 🚀 DUAL COURIER SYSTEM - GoSend & Grab Express
+# 🚀 TRIPLE COURIER SYSTEM - GoSend, Grab & JNT
 
-## 📊 SMART PRICING WITH PROFIT GUARANTEE
+## 📊 NEW COMPETITIVE PRICING - CUSTOMER HAPPY, OWNER PROFIT!
 
-Sistem pricing otomatis yang **PASTI UNTUNG** - sudah include markup di atas real cost!
+✨ **UPDATED:** Lower markup (20% vs 30%), more affordable rates!
+
+### Why Change?
+- ❌ **OLD:** Harga kemahalan → Customer takut checkout
+- ✅ **NEW:** Harga kompetitif → Customer happy, conversion naik!
+- ✅ **RESULT:** Tetap untung 20% + more sales!
 
 ---
 
-## 💰 PRICING STRUCTURE
+## 💰 NEW PRICING STRUCTURE
 
 ### 1️⃣ GoSend Express - TERCEPAT ⚡
 **Target Customer:** Yang mau cepat sampai, ready bayar premium
 
 **Real Cost dari GoSend:**
 - Base: Rp 20,000 (untuk 8km pertama)
-- Per KM: Rp 3,000/km (setelah 8km)
+- Per KM: Rp 2,500/km (setelah 8km) - **DOWN from 3k!**
 
 **Harga Jual Kita:**
-- Real Cost + **30% MARKUP**
+- Real Cost + **20% MARKUP** - **DOWN from 30%!**
 - Dibulatkan ke ribuan terdekat
 
 **Contoh Perhitungan:**
 ```
 Jarak 15km:
-- Real Cost: 20,000 + ((15-8) × 3,000) = Rp 41,000
-- Markup 30%: 41,000 × 1.30 = Rp 53,300
-- Dibulatkan: Rp 54,000
-- PROFIT: Rp 13,000 (31.7%)
+- Real Cost: 20,000 + ((15-8) × 2,500) = Rp 37,500
+- Markup 20%: 37,500 × 1.20 = Rp 45,000
+- Dibulatkan: Rp 45,000
+- PROFIT: Rp 7,500 (20%)
+
+OLD PRICE: Rp 54,000 ❌
+NEW PRICE: Rp 45,000 ✅
+SAVINGS: Rp 9,000 (17% cheaper!)
 ```
 
 **Delivery Time:** 1-2 jam
@@ -39,19 +48,23 @@ Jarak 15km:
 
 **Real Cost dari Grab:**
 - Base: Rp 13,000 (untuk 6km pertama)
-- Per KM: Rp 2,000/km (setelah 6km)
+- Per KM: Rp 1,500/km (setelah 6km) - **DOWN from 2k!**
 
 **Harga Jual Kita:**
-- Real Cost + **25% MARKUP**
+- Real Cost + **20% MARKUP** - **DOWN from 25%!**
 - Dibulatkan ke ribuan terdekat
 
 **Contoh Perhitungan:**
 ```
 Jarak 15km:
-- Real Cost: 13,000 + ((15-6) × 2,000) = Rp 31,000
-- Markup 25%: 31,000 × 1.25 = Rp 38,750
-- Dibulatkan: Rp 39,000
-- PROFIT: Rp 8,000 (25.8%)
+- Real Cost: 13,000 + ((15-6) × 1,500) = Rp 26,500
+- Markup 20%: 26,500 × 1.20 = Rp 31,800
+- Dibulatkan: Rp 32,000
+- PROFIT: Rp 5,500 (20%)
+
+OLD PRICE: Rp 39,000 ❌
+NEW PRICE: Rp 32,000 ✅
+SAVINGS: Rp 7,000 (18% cheaper!)
 ```
 
 **Delivery Time:** 3-6 jam (same day)
@@ -64,16 +77,21 @@ Jarak 15km:
 **Target Customer:** Yang ga urgent, mau paling murah
 
 **Pricing:**
-- Base: Rp 10,000
-- Per KM: Rp 500/km
+- Base: Rp 8,000 - **DOWN from 10k!**
+- Per KM: Rp 400/km - **DOWN from 500!**
 - Dibulatkan ke ribuan terdekat
 
 **Contoh Perhitungan:**
 ```
 Jarak 15km:
-- Total: 10,000 + (15 × 500) = Rp 17,500
-- Dibulatkan: Rp 18,000
-- PROFIT: ~Rp 5,500 (43%)
+- Total: 8,000 + (15 × 400) = Rp 14,000
+- Dibulatkan: Rp 14,000
+- Real Cost: ~Rp 9,800 (estimate)
+- PROFIT: ~Rp 4,200 (43%)
+
+OLD PRICE: Rp 18,000 ❌
+NEW PRICE: Rp 14,000 ✅
+SAVINGS: Rp 4,000 (22% cheaper!)
 ```
 
 **Delivery Time:** 1-2 hari kerja
@@ -140,14 +158,24 @@ Jarak 15km:
 
 ## 📏 CONTOH PRICING BERBAGAI JARAK
 
-| Jarak | GoSend (30%) | Grab (25%) | JNT | Rekomendasi |
+| Jarak | GoSend (20%) | Grab (20%) | JNT | Best Value |
 |-------|-------------|-----------|-----|-------------|
-| 5km | Rp 26,000 | Rp 17,000 | Rp 13,000 | Semua oke |
-| 10km | Rp 34,000 | Rp 27,000 | Rp 15,000 | Grab balance |
-| 15km | Rp 54,000 | Rp 39,000 | Rp 18,000 | Grab best value |
-| 20km | Rp 73,000 | Rp 52,000 | Rp 20,000 | Grab recommended |
-| 25km | Rp 93,000 | Rp 64,000 | Rp 23,000 | JNT if not urgent |
-| 30km | Rp 112,000 | Rp 75,000 | Rp 25,000 | Consider JNT |
+| 5km | Rp 24,000 ✅ | Rp 16,000 ✅ | Rp 10,000 ✅ | Semua affordable! |
+| 10km | Rp 30,000 ✅ | Rp 22,000 ✅ | Rp 12,000 ✅ | Grab great balance |
+| 15km | Rp 45,000 ✅ | Rp 32,000 ✅ | Rp 14,000 ✅ | Grab best value |
+| 20km | Rp 60,000 ✅ | Rp 41,000 ✅ | Rp 16,000 ✅ | Grab recommended |
+| 25km | Rp 75,000 ✅ | Rp 50,000 ✅ | Rp 18,000 ✅ | JNT if not urgent |
+| 30km | Rp 90,000 ✅ | Rp 59,000 ✅ | Rp 20,000 ✅ | JNT budget-friendly |
+
+**OLD PRICES (20km example):**
+| Jarak | OLD GoSend | OLD Grab | OLD JNT |
+|-------|------------|----------|---------|
+| 20km | Rp 73,000 ❌ | Rp 52,000 ❌ | Rp 20,000 ❌ |
+
+**NEW PRICES (20km example):**
+| Jarak | NEW GoSend | NEW Grab | NEW JNT | Total Savings |
+|-------|------------|----------|---------|---------------|
+| 20km | Rp 60,000 ✅ | Rp 41,000 ✅ | Rp 16,000 ✅ | Rp 28,000 saved! |
 
 ---
 

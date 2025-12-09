@@ -201,17 +201,17 @@ try {
                 // Real cost calculation + markup untuk profit
 
                 // OPTION 1: GOSEND EXPRESS (Fast but expensive)
-                // Real GoSend: Base Rp 20,000 (8km) + Rp 2,500-3,500/km
-                // Our Price: Real cost + 30% markup biar ga boncos
+                // Real GoSend: Base Rp 20,000 (8km) + Rp 2,500/km
+                // Our Price: Real cost + 20% markup (competitive pricing!)
                 if ($calcDistance <= 30) {
                     // Calculate REAL GoSend cost
                     $realGoSendCost = 20000; // Base 8km
                     if ($calcDistance > 8) {
-                        $realGoSendCost += ($calcDistance - 8) * 3000; // Rp 3,000/km after 8km
+                        $realGoSendCost += ($calcDistance - 8) * 2500; // Rp 2,500/km after 8km
                     }
 
-                    // Add 30% markup for profit
-                    $goSendPrice = $realGoSendCost * 1.30;
+                    // Add 20% markup for profit (lowered from 30% for competitive pricing)
+                    $goSendPrice = $realGoSendCost * 1.20;
 
                     // Round to nearest 1000
                     $goSendPrice = ceil($goSendPrice / 1000) * 1000;
@@ -232,17 +232,17 @@ try {
                 }
 
                 // OPTION 2: GRAB EXPRESS (Cheaper but slower)
-                // Real Grab: Base Rp 13,000 (6km) + Rp 1,000-3,000/km
-                // Our Price: Real cost + 25% markup
+                // Real Grab: Base Rp 13,000 (6km) + Rp 1,500/km
+                // Our Price: Real cost + 20% markup (competitive pricing!)
                 if ($calcDistance <= 30) {
                     // Calculate REAL Grab cost
                     $realGrabCost = 13000; // Base 6km
                     if ($calcDistance > 6) {
-                        $realGrabCost += ($calcDistance - 6) * 2000; // Rp 2,000/km after 6km (average)
+                        $realGrabCost += ($calcDistance - 6) * 1500; // Rp 1,500/km after 6km (competitive rate)
                     }
 
-                    // Add 25% markup for profit (slightly lower than GoSend)
-                    $grabPrice = $realGrabCost * 1.25;
+                    // Add 20% markup for profit (lowered from 25% for competitive pricing)
+                    $grabPrice = $realGrabCost * 1.20;
 
                     // Round to nearest 1000
                     $grabPrice = ceil($grabPrice / 1000) * 1000;
@@ -265,7 +265,7 @@ try {
                 // OPTION 3: JNT REGULAR (Cheapest option)
                 // Untuk customer yang mau lebih murah tapi ga urgent
                 if ($calcDistance <= 50) {
-                    $jntPrice = 10000 + ($calcDistance * 500);
+                    $jntPrice = 8000 + ($calcDistance * 400);
                     $jntPrice = ceil($jntPrice / 1000) * 1000;
 
                     $rates[] = [

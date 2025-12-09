@@ -11,14 +11,20 @@ echo ".fail{background:#f8d7da;color:#721c24;padding:15px;border-radius:8px;marg
 echo "h1{color:#333;}table{width:100%;border-collapse:collapse;background:white;margin:20px 0;}";
 echo "th,td{padding:12px;text-align:left;border:1px solid #ddd;}th{background:#667EEA;color:white;}</style></head><body>";
 
-echo "<h1>🧪 Courier Pricing Verification</h1>";
+echo "<h1>🧪 Courier Pricing Verification - NEW COMPETITIVE RATES!</h1>";
+echo "<p style='background:#fff3cd;padding:15px;border-radius:8px;border-left:4px solid #ffc107;'>";
+echo "<strong>✨ Updated:</strong> Lower markup (20% vs 30%), more affordable rates!<br>";
+echo "<strong>GoSend:</strong> Base 20k + 2.5k/km + 20% markup<br>";
+echo "<strong>Grab:</strong> Base 13k + 1.5k/km + 20% markup<br>";
+echo "<strong>JNT:</strong> Base 8k + 400/km";
+echo "</p>";
 
 $testCases = [
-    ['distance' => 5, 'expected_gosend' => 26000, 'expected_grab' => 17000, 'expected_jnt' => 13000],
-    ['distance' => 10, 'expected_gosend' => 34000, 'expected_grab' => 27000, 'expected_jnt' => 15000],
-    ['distance' => 15, 'expected_gosend' => 54000, 'expected_grab' => 39000, 'expected_jnt' => 18000],
-    ['distance' => 20, 'expected_gosend' => 73000, 'expected_grab' => 52000, 'expected_jnt' => 20000],
-    ['distance' => 25, 'expected_gosend' => 93000, 'expected_grab' => 64000, 'expected_jnt' => 23000],
+    ['distance' => 5, 'expected_gosend' => 24000, 'expected_grab' => 16000, 'expected_jnt' => 10000],
+    ['distance' => 10, 'expected_gosend' => 30000, 'expected_grab' => 22000, 'expected_jnt' => 12000],
+    ['distance' => 15, 'expected_gosend' => 45000, 'expected_grab' => 32000, 'expected_jnt' => 14000],
+    ['distance' => 20, 'expected_gosend' => 60000, 'expected_grab' => 41000, 'expected_jnt' => 16000],
+    ['distance' => 25, 'expected_gosend' => 75000, 'expected_grab' => 50000, 'expected_jnt' => 18000],
 ];
 
 $allPassed = true;
@@ -29,24 +35,24 @@ echo "<tr><th>Distance</th><th>Courier</th><th>Expected</th><th>Actual</th><th>S
 foreach ($testCases as $test) {
     $distance = $test['distance'];
 
-    // GoSend calculation
+    // GoSend calculation (NEW: 2.5k/km + 20% markup)
     $realGoSendCost = 20000;
     if ($distance > 8) {
-        $realGoSendCost += ($distance - 8) * 3000;
+        $realGoSendCost += ($distance - 8) * 2500;
     }
-    $goSendPrice = $realGoSendCost * 1.30;
+    $goSendPrice = $realGoSendCost * 1.20;
     $goSendPrice = ceil($goSendPrice / 1000) * 1000;
 
-    // Grab calculation
+    // Grab calculation (NEW: 1.5k/km + 20% markup)
     $realGrabCost = 13000;
     if ($distance > 6) {
-        $realGrabCost += ($distance - 6) * 2000;
+        $realGrabCost += ($distance - 6) * 1500;
     }
-    $grabPrice = $realGrabCost * 1.25;
+    $grabPrice = $realGrabCost * 1.20;
     $grabPrice = ceil($grabPrice / 1000) * 1000;
 
-    // JNT calculation
-    $jntPrice = 10000 + ($distance * 500);
+    // JNT calculation (NEW: 8k base + 400/km)
+    $jntPrice = 8000 + ($distance * 400);
     $jntPrice = ceil($jntPrice / 1000) * 1000;
 
     // Check GoSend
@@ -104,44 +110,44 @@ if ($allPassed) {
     echo "</div>";
 }
 
-// Show profit breakdown for 15km example
-echo "<h2>💰 Profit Breakdown Example (15km)</h2>";
+// Show profit breakdown for 15km example (NEW RATES!)
+echo "<h2>💰 Profit Breakdown Example (15km) - NEW COMPETITIVE RATES</h2>";
 echo "<table>";
 echo "<tr><th>Courier</th><th>Real Cost</th><th>Markup</th><th>Sell Price</th><th>Profit</th><th>%</th></tr>";
 
-// GoSend 15km
-$realGoSendCost = 20000 + ((15 - 8) * 3000);
-$goSendSellPrice = ceil(($realGoSendCost * 1.30) / 1000) * 1000;
+// GoSend 15km (NEW: 2.5k/km + 20% markup)
+$realGoSendCost = 20000 + ((15 - 8) * 2500);
+$goSendSellPrice = ceil(($realGoSendCost * 1.20) / 1000) * 1000;
 $goSendProfit = $goSendSellPrice - $realGoSendCost;
 $goSendProfitPercent = (($goSendProfit / $realGoSendCost) * 100);
 
 echo "<tr>";
 echo "<td>⚡ GoSend</td>";
 echo "<td>Rp " . number_format($realGoSendCost, 0, ',', '.') . "</td>";
-echo "<td>30%</td>";
+echo "<td>20%</td>";
 echo "<td>Rp " . number_format($goSendSellPrice, 0, ',', '.') . "</td>";
 echo "<td style='color:#28a745;font-weight:bold;'>Rp " . number_format($goSendProfit, 0, ',', '.') . "</td>";
 echo "<td style='color:#28a745;font-weight:bold;'>" . number_format($goSendProfitPercent, 1) . "%</td>";
 echo "</tr>";
 
-// Grab 15km
-$realGrabCost = 13000 + ((15 - 6) * 2000);
-$grabSellPrice = ceil(($realGrabCost * 1.25) / 1000) * 1000;
+// Grab 15km (NEW: 1.5k/km + 20% markup)
+$realGrabCost = 13000 + ((15 - 6) * 1500);
+$grabSellPrice = ceil(($realGrabCost * 1.20) / 1000) * 1000;
 $grabProfit = $grabSellPrice - $realGrabCost;
 $grabProfitPercent = (($grabProfit / $realGrabCost) * 100);
 
 echo "<tr>";
 echo "<td>🚗 Grab</td>";
 echo "<td>Rp " . number_format($realGrabCost, 0, ',', '.') . "</td>";
-echo "<td>25%</td>";
+echo "<td>20%</td>";
 echo "<td>Rp " . number_format($grabSellPrice, 0, ',', '.') . "</td>";
 echo "<td style='color:#28a745;font-weight:bold;'>Rp " . number_format($grabProfit, 0, ',', '.') . "</td>";
 echo "<td style='color:#28a745;font-weight:bold;'>" . number_format($grabProfitPercent, 1) . "%</td>";
 echo "</tr>";
 
-// JNT 15km
-$jntCost = (10000 + (15 * 500)) * 0.70;
-$jntSellPrice = ceil((10000 + (15 * 500)) / 1000) * 1000;
+// JNT 15km (NEW: 8k + 400/km)
+$jntCost = (8000 + (15 * 400)) * 0.70; // Assume 70% real cost
+$jntSellPrice = ceil((8000 + (15 * 400)) / 1000) * 1000;
 $jntProfit = $jntSellPrice - $jntCost;
 $jntProfitPercent = (($jntProfit / $jntCost) * 100);
 
