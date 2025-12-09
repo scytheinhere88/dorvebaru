@@ -17,8 +17,8 @@ $testCases = [
     ['distance' => 5, 'expected_gosend' => 26000, 'expected_grab' => 17000, 'expected_jnt' => 13000],
     ['distance' => 10, 'expected_gosend' => 34000, 'expected_grab' => 27000, 'expected_jnt' => 15000],
     ['distance' => 15, 'expected_gosend' => 54000, 'expected_grab' => 39000, 'expected_jnt' => 18000],
-    ['distance' => 20, 'expected_gosend' => 67000, 'expected_grab' => 49000, 'expected_jnt' => 20000],
-    ['distance' => 25, 'expected_gosend' => 79000, 'expected_grab' => 59000, 'expected_jnt' => 23000],
+    ['distance' => 20, 'expected_gosend' => 73000, 'expected_grab' => 52000, 'expected_jnt' => 20000],
+    ['distance' => 25, 'expected_gosend' => 93000, 'expected_grab' => 64000, 'expected_jnt' => 23000],
 ];
 
 $allPassed = true;

@@ -84,14 +84,57 @@ Jarak 15km:
 
 ## 🎯 KAPAN MUNCUL OPSI INI?
 
-### Syarat Tampil:
-1. **Jarak ≤ 30km** (untuk GoSend & Grab)
-2. **Area Sumut** (postal code 20xxx, 21xxx, 22xxx)
-3. **Customer sudah input alamat lengkap** dengan koordinat
+### Local Delivery (≤30km dari Binjai):
+✅ **GoSend Express** - Muncul untuk jarak ≤30km
+✅ **Grab Express** - Muncul untuk jarak ≤30km
+✅ **JNT Regular** - Muncul untuk jarak ≤50km
 
-### Kalau Lebih 30km:
-- Sistem otomatis pakai **Biteship couriers** (JNE, J&T, SiCepat, dll)
-- Harga dari API Biteship langsung
+**Syarat:**
+1. Customer sudah input alamat lengkap dengan koordinat GPS
+2. Jarak dalam range yang ditentukan
+3. Area Sumut (postal code 20xxx, 21xxx, 22xxx) - optional tapi recommended
+
+### National Delivery (>30km / Luar Sumut):
+✅ **BITESHIP API** automatically handles:
+- JNE (seluruh Indonesia)
+- J&T Express (seluruh Indonesia)
+- SiCepat (seluruh Indonesia)
+- AnterAja (seluruh Indonesia)
+- IDExpress (seluruh Indonesia)
+- Ninja Express (seluruh Indonesia)
+
+**Coverage:**
+- Jakarta ✅
+- Surabaya ✅
+- Bali ✅
+- Kalimantan ✅
+- Papua ✅
+- Sulawesi ✅
+- **SELURUH INDONESIA!** 🇮🇩
+
+**Pricing:** Real-time dari Biteship API (competitive & accurate)
+
+---
+
+## 🌍 CONTOH COVERAGE
+
+### Binjai → Medan (20km):
+- ⚡ GoSend: Rp 73,000 (1-2 jam)
+- 🚗 Grab: Rp 52,000 (3-6 jam)
+- 📦 JNT: Rp 20,000 (1-2 hari)
+
+### Binjai → Jakarta (1400km):
+- 📦 JNE REG: ~Rp 25,000 (2-3 hari)
+- 📦 J&T EZ: ~Rp 22,000 (3-4 hari)
+- 📦 SiCepat: ~Rp 23,000 (2-3 hari)
+- ⚡ JNE YES: ~Rp 45,000 (1 hari)
+
+### Binjai → Papua (3000km):
+- 📦 JNE REG: ~Rp 45,000 (4-7 hari)
+- 📦 J&T: ~Rp 40,000 (5-8 hari)
+- 📦 SiCepat: ~Rp 42,000 (4-7 hari)
+
+**SISTEM SMART: Otomatis pilih courier terbaik based on distance!** 🧠
 
 ---
 
@@ -102,9 +145,9 @@ Jarak 15km:
 | 5km | Rp 26,000 | Rp 17,000 | Rp 13,000 | Semua oke |
 | 10km | Rp 34,000 | Rp 27,000 | Rp 15,000 | Grab balance |
 | 15km | Rp 54,000 | Rp 39,000 | Rp 18,000 | Grab best value |
-| 20km | Rp 67,000 | Rp 49,000 | Rp 20,000 | Grab recommended |
-| 25km | Rp 79,000 | Rp 59,000 | Rp 23,000 | JNT if not urgent |
-| 30km | Rp 92,000 | Rp 69,000 | Rp 25,000 | Consider JNT |
+| 20km | Rp 73,000 | Rp 52,000 | Rp 20,000 | Grab recommended |
+| 25km | Rp 93,000 | Rp 64,000 | Rp 23,000 | JNT if not urgent |
+| 30km | Rp 112,000 | Rp 75,000 | Rp 25,000 | Consider JNT |
 
 ---
 
