@@ -1396,13 +1396,19 @@ include __DIR__ . '/../includes/header.php';
         </div>
 
         <div class="summary-line" id="summary-auto-freeship-row" style="display: none;">
-            <span class="summary-line-label">🎉 Free Shipping Promo</span>
+            <span class="summary-line-label">
+                🎉 Free Shipping Promo
+                <small style="display: block; font-size: 11px; opacity: 0.7; margin-top: 2px;">Min Rp500K - Auto Applied</small>
+            </span>
             <span class="summary-line-value" id="summary-auto-freeship" style="color: #10B981; font-weight: 700;">- Rp 0</span>
         </div>
 
         <div class="summary-line" id="summary-freeship-row" style="display: none;">
-            <span class="summary-line-label">Free Shipping Voucher</span>
-            <span class="summary-line-value" id="summary-freeship" style="color: #10B981;">- Rp 0</span>
+            <span class="summary-line-label">
+                🎟️ Free Shipping Voucher
+                <small style="display: block; font-size: 11px; opacity: 0.7; margin-top: 2px;" id="voucher-freeship-note">Best Deal Selected!</small>
+            </span>
+            <span class="summary-line-value" id="summary-freeship" style="color: #10B981; font-weight: 700;">- Rp 0</span>
         </div>
 
         <!-- Total -->
@@ -1670,6 +1676,11 @@ function loadAvailableVouchers() {
 }
 
 function renderVouchers() {
+    // Calculate auto free shipping for comparison
+    const FREE_SHIPPING_MIN = 500000;
+    const FREE_SHIPPING_MAX_DISCOUNT = 35000;
+    const autoFreeShipAmount = subtotal >= FREE_SHIPPING_MIN ? Math.min(currentShippingCost, FREE_SHIPPING_MAX_DISCOUNT) : 0;
+
     // Free Shipping
     const fsContainer = document.getElementById('free-shipping-vouchers');
     if (availableVouchers.free_shipping.length === 0) {
@@ -1680,6 +1691,21 @@ function renderVouchers() {
             const disabledClass = isDisabled ? 'disabled' : '';
             const disabledStyle = isDisabled ? 'opacity: 0.5; cursor: not-allowed; pointer-events: none;' : '';
 
+            // Calculate this voucher's potential
+            let voucherAmount = currentShippingCost;
+            if (v.discount_value) {
+                voucherAmount = Math.min(voucherAmount, v.discount_value);
+            }
+
+            // Show badge if better than auto
+            let betterBadge = '';
+            if (!isDisabled && autoFreeShipAmount > 0 && voucherAmount > autoFreeShipAmount) {
+                const savings = voucherAmount - autoFreeShipAmount;
+                betterBadge = `<div class="voucher-condition-mini" style="color: #10B981; font-weight: 700; margin-top: 8px; background: #ECFDF5; padding: 6px 10px; border-radius: 6px;">🎯 Save Rp ${formatNumber(savings)} more!</div>`;
+            } else if (!isDisabled && autoFreeShipAmount > 0 && voucherAmount <= autoFreeShipAmount) {
+                betterBadge = `<div class="voucher-condition-mini" style="color: #6B7280; margin-top: 8px; background: #F3F4F6; padding: 6px 10px; border-radius: 6px;">Auto promo is better</div>`;
+            }
+
             return `
             <div class="voucher-card-mini ${selectedVouchers.free_shipping?.id === v.id ? 'selected' : ''} ${disabledClass}"
                  style="${disabledStyle}"
@@ -1687,10 +1713,10 @@ function renderVouchers() {
                 <div class="voucher-code-mini">${v.code}</div>
                 <div class="voucher-name-mini">${v.name}</div>
                 <div class="voucher-value-mini">FREE SHIPPING</div>
-                ${v.discount_value ? `<div class="voucher-condition-mini">Max: Rp ${formatNumber(v.discount_value)}</div>` : ''}
+                ${v.discount_value ? `<div class="voucher-condition-mini">Max: Rp ${formatNumber(v.discount_value)}</div>` : '<div class="voucher-condition-mini">Unlimited</div>'}
                 ${v.min_purchase ? `<div class="voucher-condition-mini">📦 Min: Rp ${formatNumber(v.min_purchase)}</div>` : ''}
                 <div class="voucher-condition-mini">🔢 ${v.max_usage - v.usage_count} uses left</div>
-                ${isDisabled ? `<div class="voucher-condition-mini" style="color: #EF4444; font-weight: 700; margin-top: 8px; background: #FEE2E2; padding: 6px 10px; border-radius: 6px;">⚠️ Add Rp ${formatNumber(v.shortfall_amount)} more</div>` : ''}
+                ${isDisabled ? `<div class="voucher-condition-mini" style="color: #EF4444; font-weight: 700; margin-top: 8px; background: #FEE2E2; padding: 6px 10px; border-radius: 6px;">⚠️ Add Rp ${formatNumber(v.shortfall_amount)} more</div>` : betterBadge}
             </div>
         `;
         }).join('');
@@ -1778,36 +1804,60 @@ function removeVoucher(type) {
     applySelectedVouchers();
 }
 
-// ===== TOTAL CALCULATION =====
+// ===== TOTAL CALCULATION WITH SMART AUTO-SELECT =====
 function recalculateTotal() {
     let total = subtotal + currentShippingCost;
     let discountAmount = 0;
-    let freeShippingAmount = 0;
-    let autoFreeShippingAmount = 0;
 
     // AUTO FREE SHIPPING SYSTEM (Min 500K, Max 35K discount)
     const FREE_SHIPPING_MIN = 500000;
     const FREE_SHIPPING_MAX_DISCOUNT = 35000;
 
+    // STEP 1: Calculate AUTO free shipping potential
+    let autoFreeShippingAmount = 0;
     if (subtotal >= FREE_SHIPPING_MIN && currentShippingCost > 0) {
-        // Auto apply free shipping discount (max 35K)
         autoFreeShippingAmount = Math.min(currentShippingCost, FREE_SHIPPING_MAX_DISCOUNT);
-        total -= autoFreeShippingAmount;
+    }
 
-        // Show strikethrough on shipping cost
-        const shippingDisplay = document.getElementById('summary-shipping');
-        if (shippingDisplay) {
-            shippingDisplay.innerHTML = `<span style="text-decoration: line-through; color: #9CA3AF;">Rp ${formatNumber(currentShippingCost)}</span> <span style="color: #10B981; font-weight: 700; margin-left: 8px;">FREE!</span>`;
-        }
-    } else {
-        // No auto free shipping - show normal shipping cost
-        const shippingDisplay = document.getElementById('summary-shipping');
-        if (shippingDisplay) {
-            shippingDisplay.textContent = 'Rp ' + formatNumber(currentShippingCost);
+    // STEP 2: Calculate VOUCHER free shipping potential
+    let voucherFreeShippingAmount = 0;
+    if (selectedVouchers.free_shipping && currentShippingCost > 0) {
+        const v = selectedVouchers.free_shipping;
+        voucherFreeShippingAmount = currentShippingCost;
+        if (v.discount_value) {
+            voucherFreeShippingAmount = Math.min(voucherFreeShippingAmount, v.discount_value);
         }
     }
 
-    // Calculate discount from voucher
+    // STEP 3: 🎯 SMART SELECT - Use the BETTER one!
+    let actualFreeShippingAmount = 0;
+    let freeShippingSource = 'none';
+
+    if (autoFreeShippingAmount > 0 && voucherFreeShippingAmount > 0) {
+        // Both available - compare and use the BEST one
+        if (voucherFreeShippingAmount > autoFreeShippingAmount) {
+            actualFreeShippingAmount = voucherFreeShippingAmount;
+            freeShippingSource = 'voucher';
+            console.log('💎 SMART SELECT: Voucher is better! (Voucher: ' + voucherFreeShippingAmount + ' vs Auto: ' + autoFreeShippingAmount + ')');
+        } else {
+            actualFreeShippingAmount = autoFreeShippingAmount;
+            freeShippingSource = 'auto';
+            console.log('💎 SMART SELECT: Auto is better or equal! (Auto: ' + autoFreeShippingAmount + ' vs Voucher: ' + voucherFreeShippingAmount + ')');
+        }
+    } else if (autoFreeShippingAmount > 0) {
+        actualFreeShippingAmount = autoFreeShippingAmount;
+        freeShippingSource = 'auto';
+        console.log('✅ Using AUTO free shipping: ' + autoFreeShippingAmount);
+    } else if (voucherFreeShippingAmount > 0) {
+        actualFreeShippingAmount = voucherFreeShippingAmount;
+        freeShippingSource = 'voucher';
+        console.log('✅ Using VOUCHER free shipping: ' + voucherFreeShippingAmount);
+    }
+
+    // Apply the selected free shipping discount
+    total -= actualFreeShippingAmount;
+
+    // STEP 4: Calculate discount from voucher
     if (selectedVouchers.discount) {
         const v = selectedVouchers.discount;
         if (v.discount_type === 'percentage') {
@@ -1821,23 +1871,17 @@ function recalculateTotal() {
         total -= discountAmount;
     }
 
-    // Calculate free shipping from voucher (only if no auto free shipping)
-    if (selectedVouchers.free_shipping && autoFreeShippingAmount === 0) {
-        const v = selectedVouchers.free_shipping;
-        freeShippingAmount = currentShippingCost;
-        if (v.discount_value) {
-            freeShippingAmount = Math.min(freeShippingAmount, v.discount_value);
-        }
-        total -= freeShippingAmount;
-
-        // Show strikethrough on shipping cost for voucher
-        const shippingDisplay = document.getElementById('summary-shipping');
-        if (shippingDisplay) {
-            shippingDisplay.innerHTML = `<span style="text-decoration: line-through; color: #9CA3AF;">Rp ${formatNumber(currentShippingCost)}</span> <span style="color: #10B981; font-weight: 700; margin-left: 8px;">FREE!</span>`;
-        }
+    // STEP 5: Update shipping cost display
+    const shippingDisplay = document.getElementById('summary-shipping');
+    if (actualFreeShippingAmount > 0 && shippingDisplay) {
+        // Show strikethrough for free shipping
+        shippingDisplay.innerHTML = `<span style="text-decoration: line-through; color: #9CA3AF;">Rp ${formatNumber(currentShippingCost)}</span> <span style="color: #10B981; font-weight: 700; margin-left: 8px;">FREE!</span>`;
+    } else if (shippingDisplay) {
+        // No free shipping - show normal cost
+        shippingDisplay.textContent = 'Rp ' + formatNumber(currentShippingCost);
     }
 
-    // Update discount display
+    // STEP 6: Update discount display
     if (discountAmount > 0) {
         document.getElementById('summary-discount').textContent = '- Rp ' + formatNumber(discountAmount);
         document.getElementById('summary-discount-row').style.display = 'flex';
@@ -1845,34 +1889,68 @@ function recalculateTotal() {
         document.getElementById('summary-discount-row').style.display = 'none';
     }
 
-    // Update auto free shipping display
-    if (autoFreeShippingAmount > 0) {
-        document.getElementById('summary-auto-freeship').textContent = '- Rp ' + formatNumber(autoFreeShippingAmount);
+    // STEP 7: Update free shipping display based on source
+    if (freeShippingSource === 'auto') {
+        // Show AUTO free shipping
+        document.getElementById('summary-auto-freeship').textContent = '- Rp ' + formatNumber(actualFreeShippingAmount);
         document.getElementById('summary-auto-freeship-row').style.display = 'flex';
-    } else {
-        document.getElementById('summary-auto-freeship-row').style.display = 'none';
-    }
+        document.getElementById('summary-freeship-row').style.display = 'none';
 
-    // Update voucher free shipping display
-    if (freeShippingAmount > 0) {
-        document.getElementById('summary-freeship').textContent = '- Rp ' + formatNumber(freeShippingAmount);
+        // If voucher exists but auto is better/equal, show note
+        if (voucherFreeShippingAmount > 0 && autoFreeShippingAmount >= voucherFreeShippingAmount) {
+            const autoLabel = document.querySelector('#summary-auto-freeship-row .summary-line-label small');
+            if (autoLabel) {
+                autoLabel.textContent = 'Auto promo is better! 🎯';
+            }
+        }
+    } else if (freeShippingSource === 'voucher') {
+        // Show VOUCHER free shipping
+        document.getElementById('summary-freeship').textContent = '- Rp ' + formatNumber(actualFreeShippingAmount);
         document.getElementById('summary-freeship-row').style.display = 'flex';
+        document.getElementById('summary-auto-freeship-row').style.display = 'none';
+
+        // Show note explaining why voucher was chosen
+        const voucherNote = document.getElementById('voucher-freeship-note');
+        if (voucherNote) {
+            if (autoFreeShippingAmount > 0) {
+                // Voucher is better than auto
+                const savings = actualFreeShippingAmount - autoFreeShippingAmount;
+                voucherNote.textContent = `Save Rp${formatNumber(savings)} more than auto! 🎯`;
+            } else {
+                // No auto available
+                voucherNote.textContent = 'Voucher Applied! 🎉';
+            }
+        }
     } else {
+        // No free shipping
+        document.getElementById('summary-auto-freeship-row').style.display = 'none';
         document.getElementById('summary-freeship-row').style.display = 'none';
     }
 
+    // STEP 8: Update total
     document.getElementById('summary-total').textContent = 'Rp ' + formatNumber(Math.max(0, total));
 
-    // Update hidden inputs
+    // STEP 9: Update hidden inputs for form submission
     document.getElementById('voucher-discount-input').value = discountAmount;
-    document.getElementById('voucher-free-shipping-input').value = freeShippingAmount + autoFreeShippingAmount;
-    document.getElementById('auto-free-shipping-input').value = autoFreeShippingAmount;
+    document.getElementById('voucher-free-shipping-input').value = actualFreeShippingAmount;
+    document.getElementById('auto-free-shipping-input').value = freeShippingSource === 'auto' ? actualFreeShippingAmount : 0;
 
     const voucherCodes = [
         selectedVouchers.free_shipping?.code,
         selectedVouchers.discount?.code
     ].filter(Boolean).join(',');
     document.getElementById('voucher-codes-input').value = voucherCodes;
+
+    console.log('📊 Final Calculation:', {
+        subtotal: subtotal,
+        shipping: currentShippingCost,
+        autoFreeShip: autoFreeShippingAmount,
+        voucherFreeShip: voucherFreeShippingAmount,
+        selectedFreeShip: actualFreeShippingAmount,
+        source: freeShippingSource,
+        discount: discountAmount,
+        total: Math.max(0, total)
+    });
 }
 
 // ===== CHECKOUT PROCESSING =====

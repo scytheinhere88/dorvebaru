@@ -76,10 +76,17 @@ try {
         $shippingCost = 0;
     }
 
-    // Apply voucher discounts
-    $finalShippingCost = $voucherFreeShipping ? 0 : $shippingCost;
+    // Apply free shipping discount (smart auto-select already done in frontend)
+    // The voucher_free_shipping contains the ACTUAL discount amount (from auto or voucher)
+    $shippingDiscount = floatval($voucherFreeShipping);
+    $finalShippingCost = max(0, $shippingCost - $shippingDiscount);
+
+    // Calculate total: subtotal + shipping (after discount) - voucher discount
     $total = $subtotal + $finalShippingCost - $voucherDiscount;
     $total = max(0, $total);
+
+    // Log for debugging
+    error_log("Order Calculation: Subtotal=$subtotal, Shipping=$shippingCost, ShipDiscount=$shippingDiscount, FinalShip=$finalShippingCost, VoucherDiscount=$voucherDiscount, Total=$total");
     
     // Generate order number
     $orderNumber = 'ORD-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -6));
