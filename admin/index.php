@@ -53,57 +53,88 @@ include __DIR__ . '/includes/admin-header.php';
 </div>
 
 <!-- Quick Actions -->
-<div class="quick-actions-grid" style="margin-top: 32px; margin-bottom: 32px;">
-    <h2 style="grid-column: 1 / -1; font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1F2937;">⚡ Quick Actions</h2>
+<style>
+@media (max-width: 768px) {
+    .quick-action-grid { grid-template-columns: 1fr !important; }
+    .quick-action-card { padding: 16px !important; gap: 12px !important; }
+    .quick-action-icon { width: 48px !important; height: 48px !important; font-size: 28px !important; }
+}
+@media (max-width: 480px) {
+    .quick-action-icon { width: 44px !important; height: 44px !important; font-size: 24px !important; }
+}
+</style>
+<div style="margin-top: 32px; margin-bottom: 32px;">
+    <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 20px; color: #1F2937;">⚡ Quick Actions</h2>
 
-    <a href="/admin/orders/index.php?status=pending" class="action-card">
-        <div class="action-icon">📦</div>
-        <div class="action-content">
-            <div class="action-title">Pesanan Baru</div>
-            <div class="action-desc">Kelola pesanan pending</div>
-        </div>
-    </a>
+    <div class="quick-action-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <a href="/admin/orders/index.php?status=pending" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">📦</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">Pesanan Baru</div>
+                <div style="font-size: 13px; color: #6B7280;">Kelola pesanan pending</div>
+            </div>
+        </a>
 
-    <a href="/admin/products/add.php" class="action-card">
-        <div class="action-icon">➕</div>
-        <div class="action-content">
-            <div class="action-title">Tambah Produk</div>
-            <div class="action-desc">Produk baru ke katalog</div>
-        </div>
-    </a>
+        <a href="/admin/products/add.php" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">➕</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">Tambah Produk</div>
+                <div style="font-size: 13px; color: #6B7280;">Produk baru ke katalog</div>
+            </div>
+        </a>
 
-    <a href="/admin/settings/index.php" class="action-card">
-        <div class="action-icon">⚙️</div>
-        <div class="action-content">
-            <div class="action-title">Pengaturan</div>
-            <div class="action-desc">Konfigurasi toko</div>
-        </div>
-    </a>
+        <a href="/admin/settings/index.php" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">⚙️</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">Pengaturan</div>
+                <div style="font-size: 13px; color: #6B7280;">Konfigurasi toko</div>
+            </div>
+        </a>
 
-    <a href="/admin/integration/error-logs.php" class="action-card">
-        <div class="action-icon">📊</div>
-        <div class="action-content">
-            <div class="action-title">Error Logs</div>
-            <div class="action-desc">Monitor webhook & errors</div>
-        </div>
-    </a>
+        <a href="/admin/integration/error-logs.php" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">📊</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">Error Logs</div>
+                <div style="font-size: 13px; color: #6B7280;">Monitor webhook & errors</div>
+            </div>
+        </a>
 
-    <a href="/admin/settings/api-settings.php" class="action-card">
-        <div class="action-icon">🔌</div>
-        <div class="action-content">
-            <div class="action-title">API Settings</div>
-            <div class="action-desc">Biteship & Midtrans</div>
-        </div>
-    </a>
+        <a href="/admin/settings/api-settings.php" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">🔌</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">API Settings</div>
+                <div style="font-size: 13px; color: #6B7280;">Biteship & Midtrans</div>
+            </div>
+        </a>
 
-    <a href="/admin/vouchers/add.php" class="action-card">
-        <div class="action-icon">🎫</div>
-        <div class="action-content">
-            <div class="action-title">Buat Voucher</div>
-            <div class="action-desc">Voucher & promo baru</div>
-        </div>
-    </a>
+        <a href="/admin/vouchers/add.php" class="quick-action-card" style="background: white; border: 2px solid #E5E7EB; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 16px; text-decoration: none; transition: all 0.3s; cursor: pointer;">
+            <div class="quick-action-icon" style="font-size: 32px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); border-radius: 12px; flex-shrink: 0;">🎫</div>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 700; color: #1F2937; margin-bottom: 4px;">Buat Voucher</div>
+                <div style="font-size: 13px; color: #6B7280;">Voucher & promo baru</div>
+            </div>
+        </a>
+    </div>
 </div>
+
+<script>
+// Add hover effects to action cards
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.quick-action-card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.borderColor = '#3B82F6';
+            this.style.transform = 'translateY(-4px)';
+            this.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.2)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.borderColor = '#E5E7EB';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+        });
+    });
+});
+</script>
 
 <div class="content-container">
     <h2 style="margin-bottom: 20px; font-size: 20px; font-weight: 600;">Recent Orders</h2>
