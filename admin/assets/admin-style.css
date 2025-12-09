@@ -478,6 +478,95 @@ tr:last-child td {
 }
 
 /* ==================
+   QUICK ACTIONS
+   ================== */
+
+.quick-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.action-card {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.action-card:hover {
+    border-color: #3B82F6;
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.action-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(180deg, #3B82F6 0%, #2563EB 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.action-card:hover::before {
+    transform: scaleY(1);
+}
+
+.action-icon {
+    font-size: 32px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    border-radius: 12px;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover .action-icon {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+    transform: scale(1.1) rotate(5deg);
+    filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
+}
+
+.action-content {
+    flex: 1;
+}
+
+.action-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1F2937;
+    margin-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+.action-card:hover .action-title {
+    color: #1E40AF;
+}
+
+.action-desc {
+    font-size: 13px;
+    color: #6B7280;
+    line-height: 1.4;
+}
+
+/* ==================
    IMAGE UPLOAD
    ================== */
 
@@ -603,6 +692,24 @@ tr:last-child td {
         grid-template-columns: 1fr;
     }
 
+    .quick-actions-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .quick-actions-grid h2 {
+        font-size: 18px;
+    }
+
+    .action-card {
+        padding: 16px;
+    }
+
+    .action-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+    }
+
     .btn-group {
         flex-direction: column;
     }
@@ -618,6 +725,15 @@ tr:last-child td {
     th,
     td {
         padding: 8px 12px;
+    }
+
+    /* Horizontal scroll for tables */
+    .content-container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
     }
 }
 
@@ -652,6 +768,38 @@ tr:last-child td {
 
     .image-preview {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .action-card {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .action-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+    }
+
+    .action-title {
+        font-size: 15px;
+    }
+
+    .action-desc {
+        font-size: 12px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-value {
+        font-size: 28px;
     }
 }
 

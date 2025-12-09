@@ -30,6 +30,7 @@ include __DIR__ . '/includes/admin-header.php';
 
 <div class="header">
     <h1>Dashboard</h1>
+    <p style="color: #6B7280; margin-top: 8px;">Selamat datang di Admin Panel Dorve.id</p>
 </div>
 
 <div class="stats-grid">
@@ -49,6 +50,59 @@ include __DIR__ . '/includes/admin-header.php';
         <div class="stat-value"><?php echo $pending_deposits; ?></div>
         <div class="stat-label">Pending Deposits</div>
     </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="quick-actions-grid" style="margin-top: 32px; margin-bottom: 32px;">
+    <h2 style="grid-column: 1 / -1; font-size: 20px; font-weight: 600; margin-bottom: 16px; color: #1F2937;">⚡ Quick Actions</h2>
+
+    <a href="/admin/orders/index.php?status=pending" class="action-card">
+        <div class="action-icon">📦</div>
+        <div class="action-content">
+            <div class="action-title">Pesanan Baru</div>
+            <div class="action-desc">Kelola pesanan pending</div>
+        </div>
+    </a>
+
+    <a href="/admin/products/add.php" class="action-card">
+        <div class="action-icon">➕</div>
+        <div class="action-content">
+            <div class="action-title">Tambah Produk</div>
+            <div class="action-desc">Produk baru ke katalog</div>
+        </div>
+    </a>
+
+    <a href="/admin/settings/index.php" class="action-card">
+        <div class="action-icon">⚙️</div>
+        <div class="action-content">
+            <div class="action-title">Pengaturan</div>
+            <div class="action-desc">Konfigurasi toko</div>
+        </div>
+    </a>
+
+    <a href="/admin/integration/error-logs.php" class="action-card">
+        <div class="action-icon">📊</div>
+        <div class="action-content">
+            <div class="action-title">Error Logs</div>
+            <div class="action-desc">Monitor webhook & errors</div>
+        </div>
+    </a>
+
+    <a href="/admin/settings/api-settings.php" class="action-card">
+        <div class="action-icon">🔌</div>
+        <div class="action-content">
+            <div class="action-title">API Settings</div>
+            <div class="action-desc">Biteship & Midtrans</div>
+        </div>
+    </a>
+
+    <a href="/admin/vouchers/add.php" class="action-card">
+        <div class="action-icon">🎫</div>
+        <div class="action-content">
+            <div class="action-title">Buat Voucher</div>
+            <div class="action-desc">Voucher & promo baru</div>
+        </div>
+    </a>
 </div>
 
 <div class="content-container">

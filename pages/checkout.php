@@ -66,6 +66,21 @@ foreach ($cart_items as &$item) {
     $subtotal += $item_price * $item['qty'];
 }
 
+// Prepare clean cart items for API (strip HTML tags)
+$cart_items_clean = array_map(function($item) {
+    return [
+        'product_id' => $item['product_id'],
+        'variant_id' => $item['variant_id'],
+        'name' => strip_tags($item['name']),
+        'price' => $item['price'],
+        'discount_percent' => $item['discount_percent'],
+        'qty' => $item['qty'],
+        'weight' => $item['weight'],
+        'size' => $item['size'] ?? null,
+        'color' => $item['color'] ?? null
+    ];
+}, $cart_items);
+
 // Redirect back to cart if stock issues
 if ($has_stock_issues) {
     $_SESSION['error_message'] = $stock_error_message . ' Silakan periksa keranjang Anda.';
@@ -1415,7 +1430,7 @@ function fetchShippingRates(lat, lng, postalCode) {
     const container = document.getElementById('shipping-rates-container');
     container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading shipping options...</p></div>';
 
-    const cartItems = <?= json_encode($cart_items) ?>;
+    const cartItems = <?= json_encode($cart_items_clean) ?>;
 
     const payload = {
         latitude: lat,
