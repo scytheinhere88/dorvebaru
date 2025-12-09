@@ -328,6 +328,26 @@ $testPostal = $_GET['postal'] ?? '20239';
 
                 $result = $client->getRates($origin, $destination, $cleanItems, $courierCodes);
 
+                // Calculate distance
+                $originLat = -3.5952; // Binjai
+                $originLng = 98.5006;
+                $destLat = floatval($testLat);
+                $destLng = floatval($testLng);
+
+                $distance = 0;
+                if ($destLat != 0 && $destLng != 0) {
+                    $earthRadius = 6371; // km
+                    $latDiff = deg2rad($destLat - $originLat);
+                    $lngDiff = deg2rad($destLng - $originLng);
+                    $a = sin($latDiff / 2) * sin($latDiff / 2) +
+                         cos(deg2rad($originLat)) * cos(deg2rad($destLat)) *
+                         sin($lngDiff / 2) * sin($lngDiff / 2);
+                    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+                    $distance = $earthRadius * $c;
+                }
+
+                echo '<p style="margin-top: 15px;"><strong>📏 Calculated Distance: ' . round($distance, 1) . ' km</strong></p>';
+
                 if ($result['success']) {
                     echo '<span class="status-badge status-success">✅ API Call Successful</span><br><br>';
 

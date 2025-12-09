@@ -160,31 +160,106 @@ try {
             return $a['price'] - $b['price'];
         });
 
-        // If no rates available, check if it's same-city and offer flat rate
+        // If no rates available, check if it's local/nearby delivery and offer alternatives
         if (count($rates) === 0) {
-            // Check if destination postal code starts with same 3 digits as origin (same city)
             $originPostal = $storeSettings['store_postal_code'] ?? '20719';
             $destPostal = $destination['postal_code'] ?? '';
 
-            $isSameCity = false;
-            if (!empty($destPostal) && strlen($originPostal) >= 3 && strlen($destPostal) >= 3) {
-                $isSameCity = substr($originPostal, 0, 3) === substr($destPostal, 0, 3);
+            $originLat = floatval($storeSettings['store_latitude'] ?? -3.5952);
+            $originLng = floatval($storeSettings['store_longitude'] ?? 98.5006);
+            $destLat = floatval($destination['latitude'] ?? 0);
+            $destLng = floatval($destination['longitude'] ?? 0);
+
+            // Calculate distance in km using Haversine formula
+            $distance = 0;
+            if ($destLat != 0 && $destLng != 0) {
+                $earthRadius = 6371; // km
+                $latDiff = deg2rad($destLat - $originLat);
+                $lngDiff = deg2rad($destLng - $originLng);
+                $a = sin($latDiff / 2) * sin($latDiff / 2) +
+                     cos(deg2rad($originLat)) * cos(deg2rad($destLat)) *
+                     sin($lngDiff / 2) * sin($lngDiff / 2);
+                $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+                $distance = $earthRadius * $c;
             }
 
-            if ($isSameCity) {
-                // Offer same-city flat rate delivery
-                $rates[] = [
-                    'courier_company' => 'internal',
-                    'courier_name' => 'Pengiriman Lokal',
-                    'courier_service_name' => 'Same City Delivery',
-                    'rate_id' => 'flat-rate-local',
-                    'price' => 10000, // Rp 10,000 flat rate for same city
-                    'duration' => '1-2 hari',
-                    'description' => 'Pengiriman dalam kota menggunakan kurir lokal',
-                    'available' => true
-                ];
+            // Check if same area (Sumut region - postal codes starting with 20, 21, 22)
+            $isSameRegion = false;
+            if (!empty($destPostal) && strlen($destPostal) >= 2) {
+                $destPrefix = substr($destPostal, 0, 2);
+                $isSameRegion = in_array($destPrefix, ['20', '21', '22']);
+            }
 
-                error_log("Added same-city flat rate: Origin $originPostal, Destination $destPostal");
+            // Offer local delivery options for short distances or same region
+            if ($distance > 0 && $distance <= 100 || $isSameRegion) {
+                error_log("Local delivery detected: Distance = {$distance}km, Origin Postal: $originPostal, Dest Postal: $destPostal");
+
+                // OPTION 1: INSTANT COURIER (Grab/GoSend style)
+                if ($distance <= 25) {
+                    $instantPrice = 15000 + ($distance * 1000); // Base + Rp 1000/km
+                    $rates[] = [
+                        'courier_company' => 'instant',
+                        'courier_name' => 'Kurir Instan',
+                        'courier_service_name' => 'Same Day (Express)',
+                        'rate_id' => 'instant-sameday',
+                        'price' => (int)$instantPrice,
+                        'duration' => 'Hari ini (3-6 jam)',
+                        'description' => 'Pengiriman instant menggunakan kurir lokal (Grab/GoSend style)',
+                        'available' => true,
+                        'distance_km' => round($distance, 1)
+                    ];
+                }
+
+                // OPTION 2: JNT SAME DAY / REGULAR LOCAL
+                if ($distance <= 50) {
+                    $regularPrice = 10000 + ($distance * 500); // Base + Rp 500/km
+                    $rates[] = [
+                        'courier_company' => 'local-jnt',
+                        'courier_name' => 'JNT Lokal',
+                        'courier_service_name' => 'Same Day Regular',
+                        'rate_id' => 'jnt-sameday',
+                        'price' => (int)$regularPrice,
+                        'duration' => '1 hari kerja',
+                        'description' => 'Pengiriman same day menggunakan JNT atau kurir lokal',
+                        'available' => true,
+                        'distance_km' => round($distance, 1)
+                    ];
+                }
+
+                // OPTION 3: EKONOMIS (1-2 hari)
+                if ($distance <= 100) {
+                    $economyPrice = 8000 + ($distance * 300); // Base + Rp 300/km
+                    $rates[] = [
+                        'courier_company' => 'local-economy',
+                        'courier_name' => 'Kurir Lokal',
+                        'courier_service_name' => 'Regular (Ekonomis)',
+                        'rate_id' => 'local-economy',
+                        'price' => (int)$economyPrice,
+                        'duration' => '1-2 hari kerja',
+                        'description' => 'Pengiriman ekonomis untuk area Sumut (Medan, Binjai, Deli Serdang, dll)',
+                        'available' => true,
+                        'distance_km' => round($distance, 1)
+                    ];
+                }
+
+                // OPTION 4: FALLBACK - Flat rate if no coordinates
+                if (count($rates) === 0 && $isSameRegion) {
+                    $rates[] = [
+                        'courier_company' => 'local',
+                        'courier_name' => 'Pengiriman Lokal',
+                        'courier_service_name' => 'Regular Delivery',
+                        'rate_id' => 'flat-rate-local',
+                        'price' => 12000,
+                        'duration' => '1-2 hari kerja',
+                        'description' => 'Pengiriman lokal area Sumatera Utara',
+                        'available' => true
+                    ];
+                }
+
+                // Sort by price (cheapest first)
+                usort($rates, function($a, $b) {
+                    return $a['price'] - $b['price'];
+                });
             }
         }
 
