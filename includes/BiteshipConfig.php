@@ -44,18 +44,18 @@ class BiteshipConfig {
 
         self::$config = [
             'api_key' => $settings['biteship_api_key'] ?? '',
-            'environment' => $settings['biteship_environment'] ?? 'sandbox',
+            'environment' => $settings['biteship_environment'] ?? 'production',
             'webhook_secret' => $settings['biteship_webhook_secret'] ?? '',
-            'base_url' => ($settings['biteship_environment'] ?? 'sandbox') === 'production'
+            'base_url' => ($settings['biteship_environment'] ?? 'production') === 'production'
                 ? 'https://api.biteship.com/v1'
                 : 'https://api-sandbox.biteship.com/v1',
             'store' => [
                 'name' => $settings['store_name'] ?? 'Dorve.id Official Store',
                 'phone' => $settings['store_phone'] ?? '+62-813-7737-8859',
-                'address' => $settings['store_address'] ?? '',
-                'city' => $settings['store_city'] ?? '',
-                'province' => $settings['store_province'] ?? '',
-                'postal_code' => $settings['store_postal_code'] ?? '',
+                'address' => $settings['store_address'] ?? 'Gang Hello Ponsel, Jl. Anggur Lk. VII No.43C, Bandar Senembah',
+                'city' => $settings['store_city'] ?? 'Binjai',
+                'province' => $settings['store_province'] ?? 'Sumatera Utara',
+                'postal_code' => $settings['store_postal_code'] ?? '20719',
                 'country' => $settings['store_country'] ?? 'ID'
             ]
         ];

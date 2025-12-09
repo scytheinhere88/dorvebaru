@@ -94,9 +94,9 @@ try {
         }
     }
 
-    // Set origin with fallback to Jakarta postal code
+    // Set origin with fallback to Binjai postal code
     $origin = [
-        'postal_code' => $storeSettings['store_postal_code'] ?? '12190'
+        'postal_code' => $storeSettings['store_postal_code'] ?? '20719'
     ];
 
     error_log("Origin: " . json_encode($origin));
