@@ -159,7 +159,35 @@ try {
         usort($rates, function($a, $b) {
             return $a['price'] - $b['price'];
         });
-        
+
+        // If no rates available, check if it's same-city and offer flat rate
+        if (count($rates) === 0) {
+            // Check if destination postal code starts with same 3 digits as origin (same city)
+            $originPostal = $storeSettings['store_postal_code'] ?? '20719';
+            $destPostal = $destination['postal_code'] ?? '';
+
+            $isSameCity = false;
+            if (!empty($destPostal) && strlen($originPostal) >= 3 && strlen($destPostal) >= 3) {
+                $isSameCity = substr($originPostal, 0, 3) === substr($destPostal, 0, 3);
+            }
+
+            if ($isSameCity) {
+                // Offer same-city flat rate delivery
+                $rates[] = [
+                    'courier_company' => 'internal',
+                    'courier_name' => 'Pengiriman Lokal',
+                    'courier_service_name' => 'Same City Delivery',
+                    'rate_id' => 'flat-rate-local',
+                    'price' => 10000, // Rp 10,000 flat rate for same city
+                    'duration' => '1-2 hari',
+                    'description' => 'Pengiriman dalam kota menggunakan kurir lokal',
+                    'available' => true
+                ];
+
+                error_log("Added same-city flat rate: Origin $originPostal, Destination $destPostal");
+            }
+        }
+
         echo json_encode([
             'success' => true,
             'rates' => $rates,
