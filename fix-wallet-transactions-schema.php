@@ -22,26 +22,34 @@ try {
     }
     echo "\n";
 
-    // Start transaction
-    $pdo->beginTransaction();
+    // Note: ALTER TABLE statements auto-commit in MySQL, so we can't use transactions
+    // We'll execute them one by one and handle errors individually
 
     // Fix 1: Ensure status column has correct ENUM values
     echo "2. Fixing 'status' column...\n";
-    $pdo->exec("
-        ALTER TABLE wallet_transactions
-        MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'completed', 'failed', 'cancelled')
-        DEFAULT 'pending'
-    ");
-    echo "   ✓ Status column updated\n\n";
+    try {
+        $pdo->exec("
+            ALTER TABLE wallet_transactions
+            MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'completed', 'failed', 'cancelled')
+            DEFAULT 'pending'
+        ");
+        echo "   ✓ Status column updated\n\n";
+    } catch (PDOException $e) {
+        echo "   ⚠ Warning: " . $e->getMessage() . "\n\n";
+    }
 
     // Fix 2: Ensure payment_status column has correct ENUM values
     echo "3. Fixing 'payment_status' column...\n";
-    $pdo->exec("
-        ALTER TABLE wallet_transactions
-        MODIFY COLUMN payment_status ENUM('pending', 'paid', 'success', 'failed', 'cancelled', 'refunded')
-        DEFAULT 'pending'
-    ");
-    echo "   ✓ Payment_status column updated\n\n";
+    try {
+        $pdo->exec("
+            ALTER TABLE wallet_transactions
+            MODIFY COLUMN payment_status ENUM('pending', 'paid', 'success', 'failed', 'cancelled', 'refunded')
+            DEFAULT 'pending'
+        ");
+        echo "   ✓ Payment_status column updated\n\n";
+    } catch (PDOException $e) {
+        echo "   ⚠ Warning: " . $e->getMessage() . "\n\n";
+    }
 
     // Fix 3: Update any existing NULL values
     echo "4. Updating NULL values...\n";
@@ -53,20 +61,27 @@ try {
 
     // Fix 4: Make columns NOT NULL if they aren't already
     echo "5. Setting columns as NOT NULL...\n";
-    $pdo->exec("
-        ALTER TABLE wallet_transactions
-        MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'completed', 'failed', 'cancelled')
-        NOT NULL DEFAULT 'pending'
-    ");
-    $pdo->exec("
-        ALTER TABLE wallet_transactions
-        MODIFY COLUMN payment_status ENUM('pending', 'paid', 'success', 'failed', 'cancelled', 'refunded')
-        NOT NULL DEFAULT 'pending'
-    ");
-    echo "   ✓ Columns set as NOT NULL\n\n";
+    try {
+        $pdo->exec("
+            ALTER TABLE wallet_transactions
+            MODIFY COLUMN status ENUM('pending', 'approved', 'rejected', 'completed', 'failed', 'cancelled')
+            NOT NULL DEFAULT 'pending'
+        ");
+        echo "   ✓ Status column set as NOT NULL\n";
+    } catch (PDOException $e) {
+        echo "   ⚠ Warning: " . $e->getMessage() . "\n";
+    }
 
-    // Commit transaction
-    $pdo->commit();
+    try {
+        $pdo->exec("
+            ALTER TABLE wallet_transactions
+            MODIFY COLUMN payment_status ENUM('pending', 'paid', 'success', 'failed', 'cancelled', 'refunded')
+            NOT NULL DEFAULT 'pending'
+        ");
+        echo "   ✓ Payment_status column set as NOT NULL\n\n";
+    } catch (PDOException $e) {
+        echo "   ⚠ Warning: " . $e->getMessage() . "\n\n";
+    }
 
     // Verify changes
     echo "6. Verifying changes...\n";
@@ -96,11 +111,7 @@ try {
     echo "You can now approve deposits without errors!\n";
 
 } catch (PDOException $e) {
-    if ($pdo->inTransaction()) {
-        $pdo->rollBack();
-    }
     echo "❌ ERROR: " . $e->getMessage() . "\n";
-    echo "\nStack trace:\n";
-    echo $e->getTraceAsString() . "\n";
+    echo "\nPlease check the error above and try again.\n";
     exit(1);
 }
