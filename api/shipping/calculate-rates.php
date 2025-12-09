@@ -183,6 +183,9 @@ try {
                 $distance = $earthRadius * $c;
             }
 
+            // Use minimum 3km if distance is 0 or very small (same location)
+            $calcDistance = $distance > 0 ? $distance : 3;
+
             // Check if same area (Sumut region - postal codes starting with 20, 21, 22)
             $isSameRegion = false;
             if (!empty($destPostal) && strlen($destPostal) >= 2) {
@@ -191,12 +194,12 @@ try {
             }
 
             // Offer local delivery options for short distances or same region
-            if ($distance > 0 && $distance <= 100 || $isSameRegion) {
-                error_log("Local delivery detected: Distance = {$distance}km, Origin Postal: $originPostal, Dest Postal: $destPostal");
+            if (($distance >= 0 && $distance <= 100) || $isSameRegion) {
+                error_log("Local delivery detected: Distance = {$distance}km (calc: {$calcDistance}km), Origin Postal: $originPostal, Dest Postal: $destPostal");
 
                 // OPTION 1: INSTANT COURIER (Grab/GoSend style)
-                if ($distance <= 25) {
-                    $instantPrice = 15000 + ($distance * 1000); // Base + Rp 1000/km
+                if ($calcDistance <= 25) {
+                    $instantPrice = 15000 + ($calcDistance * 1000); // Base + Rp 1000/km
                     $rates[] = [
                         'courier_company' => 'instant',
                         'courier_name' => 'Kurir Instan',
@@ -206,13 +209,13 @@ try {
                         'duration' => 'Hari ini (3-6 jam)',
                         'description' => 'Pengiriman instant menggunakan kurir lokal (Grab/GoSend style)',
                         'available' => true,
-                        'distance_km' => round($distance, 1)
+                        'distance_km' => round($calcDistance, 1)
                     ];
                 }
 
                 // OPTION 2: JNT SAME DAY / REGULAR LOCAL
-                if ($distance <= 50) {
-                    $regularPrice = 10000 + ($distance * 500); // Base + Rp 500/km
+                if ($calcDistance <= 50) {
+                    $regularPrice = 10000 + ($calcDistance * 500); // Base + Rp 500/km
                     $rates[] = [
                         'courier_company' => 'local-jnt',
                         'courier_name' => 'JNT Lokal',
@@ -222,13 +225,13 @@ try {
                         'duration' => '1 hari kerja',
                         'description' => 'Pengiriman same day menggunakan JNT atau kurir lokal',
                         'available' => true,
-                        'distance_km' => round($distance, 1)
+                        'distance_km' => round($calcDistance, 1)
                     ];
                 }
 
                 // OPTION 3: EKONOMIS (1-2 hari)
-                if ($distance <= 100) {
-                    $economyPrice = 8000 + ($distance * 300); // Base + Rp 300/km
+                if ($calcDistance <= 100) {
+                    $economyPrice = 8000 + ($calcDistance * 300); // Base + Rp 300/km
                     $rates[] = [
                         'courier_company' => 'local-economy',
                         'courier_name' => 'Kurir Lokal',
@@ -238,7 +241,7 @@ try {
                         'duration' => '1-2 hari kerja',
                         'description' => 'Pengiriman ekonomis untuk area Sumut (Medan, Binjai, Deli Serdang, dll)',
                         'available' => true,
-                        'distance_km' => round($distance, 1)
+                        'distance_km' => round($calcDistance, 1)
                     ];
                 }
 

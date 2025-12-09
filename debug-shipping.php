@@ -400,8 +400,138 @@ $testPostal = $_GET['postal'] ?? '20239';
                     echo '<pre>' . json_encode($result['data'], JSON_PRETTY_PRINT) . '</pre>';
 
                 } else {
-                    echo '<span class="status-badge status-error">❌ API Call Failed</span><br><br>';
+                    echo '<span class="status-badge status-error">❌ Biteship API Failed</span><br><br>';
                     echo '<p><strong>Error:</strong> ' . htmlspecialchars($result['error']) . '</p>';
+
+                    // Check for local delivery fallback
+                    echo '<br><hr style="margin: 20px 0; border: 1px dashed #ddd;"><br>';
+                    echo '<h3 style="color: #667eea;">🚚 Checking Local Delivery Options...</h3>';
+
+                    $originPostal = '20719';
+                    $destPostal = $testPostal;
+
+                    // Check if same region (Sumut: 20xxx, 21xxx, 22xxx)
+                    $isSameRegion = false;
+                    if (!empty($destPostal) && strlen($destPostal) >= 2) {
+                        $destPrefix = substr($destPostal, 0, 2);
+                        $isSameRegion = in_array($destPrefix, ['20', '21', '22']);
+                    }
+
+                    echo '<p>📍 <strong>Origin Postal:</strong> ' . $originPostal . ' (Binjai)</p>';
+                    echo '<p>📍 <strong>Destination Postal:</strong> ' . $destPostal . '</p>';
+                    echo '<p>📏 <strong>Distance:</strong> ' . round($distance, 1) . ' km</p>';
+                    echo '<p>🗺️ <strong>Same Region (Sumut):</strong> ' . ($isSameRegion ? '✅ Yes' : '❌ No') . '</p>';
+
+                    $localRates = [];
+
+                    // Use minimum 3km if distance is 0 or very small (same location)
+                    $calcDistance = $distance > 0 ? $distance : 3;
+
+                    // Offer local delivery options for short distances or same region
+                    if (($distance >= 0 && $distance <= 100) || $isSameRegion) {
+                        echo '<br><span class="status-badge status-success">✅ Local Delivery Available!</span><br><br>';
+
+                        if ($distance == 0 || $distance < 1) {
+                            echo '<p style="color: #856404; background: #fff3cd; padding: 10px; border-radius: 6px;">ℹ️ Distance is 0 or very small (same location coordinates). Using minimum 3km for pricing calculation.</p><br>';
+                        }
+
+                        // OPTION 1: INSTANT COURIER (≤25km)
+                        if ($calcDistance <= 25) {
+                            $instantPrice = 15000 + ($calcDistance * 1000);
+                            $localRates[] = [
+                                'courier_company' => 'instant',
+                                'courier_name' => '🚀 Kurir Instan',
+                                'courier_service_name' => 'Same Day (Express)',
+                                'rate_id' => 'instant-sameday',
+                                'price' => (int)$instantPrice,
+                                'duration' => 'Hari ini (3-6 jam)',
+                                'description' => 'Pengiriman instant menggunakan kurir lokal (Grab/GoSend style)',
+                                'available' => true,
+                                'distance_km' => round($calcDistance, 1)
+                            ];
+                        }
+
+                        // OPTION 2: JNT SAME DAY (≤50km)
+                        if ($calcDistance <= 50) {
+                            $regularPrice = 10000 + ($calcDistance * 500);
+                            $localRates[] = [
+                                'courier_company' => 'local-jnt',
+                                'courier_name' => '📦 JNT Lokal',
+                                'courier_service_name' => 'Same Day Regular',
+                                'rate_id' => 'jnt-sameday',
+                                'price' => (int)$regularPrice,
+                                'duration' => '1 hari kerja',
+                                'description' => 'Pengiriman same day menggunakan JNT atau kurir lokal',
+                                'available' => true,
+                                'distance_km' => round($calcDistance, 1)
+                            ];
+                        }
+
+                        // OPTION 3: ECONOMY (≤100km)
+                        if ($calcDistance <= 100) {
+                            $economyPrice = 8000 + ($calcDistance * 300);
+                            $localRates[] = [
+                                'courier_company' => 'local-economy',
+                                'courier_name' => '🏪 Kurir Lokal',
+                                'courier_service_name' => 'Regular (Ekonomis)',
+                                'rate_id' => 'local-economy',
+                                'price' => (int)$economyPrice,
+                                'duration' => '1-2 hari kerja',
+                                'description' => 'Pengiriman ekonomis untuk area Sumut (Medan, Binjai, Deli Serdang, dll)',
+                                'available' => true,
+                                'distance_km' => round($calcDistance, 1)
+                            ];
+                        }
+
+                        // FALLBACK
+                        if (count($localRates) === 0 && $isSameRegion) {
+                            $localRates[] = [
+                                'courier_company' => 'local',
+                                'courier_name' => '🚚 Pengiriman Lokal',
+                                'courier_service_name' => 'Regular Delivery',
+                                'rate_id' => 'flat-rate-local',
+                                'price' => 12000,
+                                'duration' => '1-2 hari kerja',
+                                'description' => 'Pengiriman lokal area Sumatera Utara',
+                                'available' => true
+                            ];
+                        }
+
+                        // Display local rates
+                        if (count($localRates) > 0) {
+                            foreach ($localRates as $rate) {
+                                echo '<div class="courier-card courier-available" style="border-left: 4px solid #28a745;">';
+                                echo '<div class="courier-info">';
+                                echo '<h3>' . htmlspecialchars($rate['courier_name']) . '</h3>';
+                                echo '<p>' . htmlspecialchars($rate['courier_service_name']) . '</p>';
+                                echo '<p style="font-size: 12px; margin-top: 5px;">' . htmlspecialchars($rate['description']) . '</p>';
+                                if (isset($rate['distance_km'])) {
+                                    echo '<p style="font-size: 12px; color: #28a745; margin-top: 3px;">📏 ' . $rate['distance_km'] . ' km</p>';
+                                }
+                                echo '<p style="font-size: 12px; color: #667eea; margin-top: 3px;">⏱️ ' . htmlspecialchars($rate['duration']) . '</p>';
+                                echo '</div>';
+                                echo '<div class="courier-price">';
+                                echo 'Rp ' . number_format($rate['price'], 0, ',', '.');
+                                echo '</div>';
+                                echo '</div>';
+                            }
+
+                            echo '<p style="margin-top: 15px;"><strong>Summary:</strong></p>';
+                            echo '<p>✅ <strong>' . count($localRates) . ' Local Delivery Options Available!</strong></p>';
+
+                            echo '<div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 15px; margin-top: 15px;">';
+                            echo '<h4 style="color: #155724; margin-bottom: 10px;">🎉 SUCCESS!</h4>';
+                            echo '<p style="color: #155724;">Biteship couriers tidak available untuk jarak dekat, tapi sistem otomatis offer <strong>' . count($localRates) . ' local delivery options</strong>!</p>';
+                            echo '<p style="color: #155724; margin-top: 10px;">✅ Customer tetap bisa checkout dengan pilihan kurir lokal!</p>';
+                            echo '</div>';
+                        }
+                    } else {
+                        echo '<br><span class="status-badge status-warning">⚠️ No Local Delivery Options</span><br><br>';
+                        echo '<p>Destination too far (> 100km) and not in Sumut region.</p>';
+                        echo '<p>Customer needs to use different address or wait for Biteship courier activation.</p>';
+                    }
+
+                    echo '<br><p style="margin-top: 20px;"><strong>Biteship API Response:</strong></p>';
                     echo '<pre>' . json_encode($result, JSON_PRETTY_PRINT) . '</pre>';
                 }
 
