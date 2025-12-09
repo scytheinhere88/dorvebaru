@@ -5,6 +5,7 @@
  */
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../includes/MidtransHelper.php';
+require_once __DIR__ . '/../../includes/tier-helper.php';
 
 header('Content-Type: application/json');
 
@@ -62,26 +63,32 @@ try {
                     WHERE id = ?
                 ");
                 $stmt->execute([$transactionId, $topup['id']]);
-                
-                // Add balance to user wallet
+
+                // Add balance to user wallet and update total_topup
                 $amount = $topup['amount'];
-                $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?");
-                $stmt->execute([$amount, $topup['user_id']]);
+                $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ?, total_topup = total_topup + ? WHERE id = ?");
+                $stmt->execute([$amount, $amount, $topup['user_id']]);
+
+                // Update user tier
+                updateUserTier($pdo, $topup['user_id']);
             }
         } elseif ($transactionStatus == 'settlement') {
             // Success
             $stmt = $pdo->prepare("
-                UPDATE wallet_topups 
-                SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW() 
+                UPDATE wallet_topups
+                SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW()
                 WHERE id = ?
             ");
             $stmt->execute([$transactionId, $topup['id']]);
-            
-            // Add balance to user wallet
+
+            // Add balance to user wallet and update total_topup
             $amount = $topup['amount'];
-            $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?");
-            $stmt->execute([$amount, $topup['user_id']]);
-            
+            $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ?, total_topup = total_topup + ? WHERE id = ?");
+            $stmt->execute([$amount, $amount, $topup['user_id']]);
+
+            // Update user tier
+            updateUserTier($pdo, $topup['user_id']);
+
         } elseif ($transactionStatus == 'pending') {
             $stmt = $pdo->prepare("UPDATE wallet_topups SET payment_status = 'pending' WHERE id = ?");
             $stmt->execute([$topup['id']]);
@@ -106,17 +113,24 @@ try {
         if ($transactionStatus == 'capture') {
             if ($fraudStatus == 'accept') {
                 $stmt = $pdo->prepare("
-                    UPDATE orders 
-                    SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW(), 
+                    UPDATE orders
+                    SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW(),
                         fulfillment_status = 'processing'
                     WHERE id = ?
                 ");
                 $stmt->execute([$transactionId, $order['id']]);
-                
+
+                // Update total_topup for order (count as topup for tier calculation)
+                $stmt = $pdo->prepare("UPDATE users SET total_topup = total_topup + ? WHERE id = ?");
+                $stmt->execute([$order['final_total'], $order['user_id']]);
+
+                // Update user tier
+                updateUserTier($pdo, $order['user_id']);
+
                 // Clear cart
                 $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
                 $stmt->execute([$order['user_id']]);
-                
+
                 // Record voucher usage if any
                 if (!empty($order['voucher_codes'])) {
                     $codes = explode(',', $order['voucher_codes']);
@@ -144,17 +158,24 @@ try {
             }
         } elseif ($transactionStatus == 'settlement') {
             $stmt = $pdo->prepare("
-                UPDATE orders 
-                SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW(), 
+                UPDATE orders
+                SET payment_status = 'paid', midtrans_transaction_id = ?, paid_at = NOW(),
                     fulfillment_status = 'processing'
                 WHERE id = ?
             ");
             $stmt->execute([$transactionId, $order['id']]);
-            
+
+            // Update total_topup for order (count as topup for tier calculation)
+            $stmt = $pdo->prepare("UPDATE users SET total_topup = total_topup + ? WHERE id = ?");
+            $stmt->execute([$order['final_total'], $order['user_id']]);
+
+            // Update user tier
+            updateUserTier($pdo, $order['user_id']);
+
             // Clear cart
             $stmt = $pdo->prepare("DELETE FROM cart_items WHERE user_id = ?");
             $stmt->execute([$order['user_id']]);
-            
+
             // Record voucher usage if any
             if (!empty($order['voucher_codes'])) {
                 $codes = explode(',', $order['voucher_codes']);

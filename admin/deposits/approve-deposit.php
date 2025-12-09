@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config.php';
 require_once __DIR__ . '/../../includes/referral-helper.php';
+require_once __DIR__ . '/../../includes/tier-helper.php';
 
 if (!isAdmin()) {
     die(json_encode(['success' => false, 'message' => 'Unauthorized']));
@@ -39,9 +40,9 @@ try {
     ");
     $stmt->execute([$admin_notes, $deposit_id]);
     
-    // Add balance to user wallet
-    $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ? WHERE id = ?");
-    $stmt->execute([$deposit['amount'], $deposit['user_id']]);
+    // Add balance to user wallet and update total_topup
+    $stmt = $pdo->prepare("UPDATE users SET wallet_balance = wallet_balance + ?, total_topup = total_topup + ? WHERE id = ?");
+    $stmt->execute([$deposit['amount'], $deposit['amount'], $deposit['user_id']]);
     
     // Create wallet transaction record
     $stmt = $pdo->prepare("
@@ -69,7 +70,10 @@ try {
     ]);
     
     $pdo->commit();
-    
+
+    // Update user tier based on total_topup
+    $tier_result = updateUserTier($pdo, $deposit['user_id']);
+
     // Check if this is first topup and process referral reward
     $stmt = $pdo->prepare("
         SELECT COUNT(*) as count FROM topups 
@@ -78,18 +82,24 @@ try {
     $stmt->execute([$deposit['user_id']]);
     $topup_count = $stmt->fetchColumn();
     
+    $success_message = 'Deposit approved successfully!';
+
+    // Add tier upgrade message if applicable
+    if (isset($tier_result['changed']) && $tier_result['changed']) {
+        $tier_info = getTierInfo($tier_result['new_tier']);
+        $success_message .= ' User upgraded to ' . $tier_info['name'] . ' tier!';
+    }
+
     if ($topup_count == 1) {
         // This is first topup, process referral reward
         $reward_result = processReferralReward($deposit['user_id'], $deposit['amount']);
-        
+
         if ($reward_result['success']) {
-            $_SESSION['success'] = 'Deposit approved successfully! Referral reward of Rp ' . number_format($reward_result['commission'], 0, ',', '.') . ' has been awarded.';
-        } else {
-            $_SESSION['success'] = 'Deposit approved successfully!';
+            $success_message .= ' Referral reward of Rp ' . number_format($reward_result['commission'], 0, ',', '.') . ' has been awarded.';
         }
-    } else {
-        $_SESSION['success'] = 'Deposit approved successfully!';
     }
+
+    $_SESSION['success'] = $success_message;
     
     redirect('/admin/deposits/index.php');
     
